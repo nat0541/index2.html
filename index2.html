@@ -1,0 +1,2558 @@
+from flask import Flask
+
+app = Flask(__name__)
+
+HTML = r"""
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>令和ゲームセンター</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+:root{
+    --cyan:#00f7ff;
+    --pink:#ff0088;
+    --purple:#9b00ff;
+    --yellow:#ffe600;
+    --green:#00ff88;
+    --dark:#05050c;
+}
+
+body{
+    margin:0;
+    color:white;
+    font-family:"Segoe UI","Yu Gothic",sans-serif;
+    background:
+      radial-gradient(circle at 20% 10%,#082342 0,transparent 30%),
+      radial-gradient(circle at 80% 25%,#3a002c 0,transparent 30%),
+      linear-gradient(180deg,#020207,#090914 50%,#020207);
+    min-height:100vh;
+}
+
+body:before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    opacity:.13;
+    background-image:
+        linear-gradient(rgba(0,247,255,.15) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(0,247,255,.15) 1px,transparent 1px);
+    background-size:35px 35px;
+}
+
+header{
+    position:sticky;
+    top:0;
+    z-index:100;
+    background:rgba(2,2,10,.93);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid #00f7ff77;
+    padding:12px 16px;
+    box-shadow:0 0 25px #00f7ff22;
+}
+
+.topbar{
+    max-width:1200px;
+    margin:auto;
+    display:flex;
+    gap:15px;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+}
+
+.logo{
+    font-size:clamp(23px,4vw,42px);
+    font-weight:900;
+    letter-spacing:4px;
+    color:white;
+    text-shadow:
+        0 0 5px var(--cyan),
+        0 0 12px var(--cyan),
+        0 0 25px var(--cyan);
+}
+
+.pointBox{
+    padding:10px 18px;
+    border:1px solid var(--cyan);
+    border-radius:15px;
+    box-shadow:inset 0 0 15px #00f7ff22,0 0 15px #00f7ff33;
+    white-space:nowrap;
+}
+
+#points{
+    color:var(--yellow);
+    font-weight:900;
+    font-size:28px;
+    text-shadow:0 0 10px var(--yellow);
+}
+
+.controls{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+}
+
+button{
+    border:0;
+    cursor:pointer;
+    color:white;
+    font-weight:bold;
+    font-size:15px;
+    padding:11px 18px;
+    border-radius:12px;
+    background:linear-gradient(180deg,#17d8e5,#006baa);
+    box-shadow:
+        0 6px 0 #00456d,
+        0 0 13px #00eaff66;
+    transition:.08s;
+}
+
+button:hover{
+    filter:brightness(1.18);
+}
+
+button:active{
+    transform:translateY(4px);
+    box-shadow:
+        0 2px 0 #00456d,
+        0 0 8px #00eaff;
+}
+
+button.red{
+    background:linear-gradient(#ff176e,#a90045);
+    box-shadow:0 6px 0 #68002d,0 0 15px #ff008866;
+}
+
+button.green{
+    background:linear-gradient(#00e58d,#008e58);
+    box-shadow:0 6px 0 #005a38,0 0 15px #00ff8880;
+}
+
+button.yellow{
+    color:#111;
+    background:linear-gradient(#ffe94a,#e6a900);
+    box-shadow:0 6px 0 #896300,0 0 15px #ffe60066;
+}
+
+main{
+    width:min(1200px,96%);
+    margin:25px auto 80px;
+}
+
+.hero{
+    text-align:center;
+    padding:25px 10px 30px;
+}
+
+.hero h1{
+    margin:0;
+    font-size:clamp(30px,6vw,65px);
+    color:#fff;
+    letter-spacing:5px;
+    text-shadow:
+        0 0 5px #fff,
+        0 0 15px var(--cyan),
+        0 0 30px var(--cyan),
+        0 0 55px var(--purple);
+}
+
+.hero p{
+    color:#b7eaff;
+    font-size:17px;
+}
+
+.soundPanel{
+    margin:10px auto 25px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:12px;
+}
+
+input[type=range]{
+    accent-color:var(--cyan);
+    width:130px;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+    gap:18px;
+}
+
+.gameCard{
+    position:relative;
+    min-height:210px;
+    padding:22px;
+    border:1px solid #00f7ff66;
+    border-radius:22px;
+    background:linear-gradient(145deg,#101021,#05050b);
+    overflow:hidden;
+    box-shadow:
+        inset 0 0 25px #00f7ff0d,
+        0 0 18px #00f7ff18;
+    transition:.25s;
+}
+
+.gameCard:hover{
+    transform:translateY(-5px) scale(1.015);
+    border-color:var(--cyan);
+    box-shadow:0 0 28px #00f7ff55;
+}
+
+.gameCard:after{
+    content:"";
+    position:absolute;
+    width:100px;
+    height:100px;
+    right:-35px;
+    top:-35px;
+    border-radius:50%;
+    background:#ff008855;
+    filter:blur(28px);
+}
+
+.icon{
+    font-size:48px;
+}
+
+.gameCard h2{
+    margin:8px 0;
+    font-size:23px;
+}
+
+.gameCard p{
+    min-height:44px;
+    color:#aab8c8;
+}
+
+.game{
+    display:none;
+    padding:15px;
+}
+
+.game.active{
+    display:block;
+}
+
+.panel{
+    max-width:900px;
+    margin:auto;
+    padding:20px;
+    border:1px solid #00f7ff88;
+    border-radius:22px;
+    background:rgba(4,4,15,.92);
+    box-shadow:0 0 25px #00f7ff22;
+}
+
+.panel h2{
+    text-align:center;
+    color:var(--cyan);
+    text-shadow:0 0 12px var(--cyan);
+    font-size:30px;
+}
+
+.gameActions{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:10px;
+    margin:15px 0;
+}
+
+.message{
+    text-align:center;
+    min-height:35px;
+    margin:12px;
+    font-size:20px;
+    font-weight:bold;
+    color:var(--yellow);
+}
+
+canvas{
+    display:block;
+    max-width:100%;
+    margin:auto;
+    background:#000;
+    border:2px solid var(--cyan);
+    border-radius:12px;
+    box-shadow:0 0 20px #00f7ff55;
+    touch-action:none;
+}
+
+.back{
+    margin-bottom:15px;
+}
+
+.cards{
+    display:flex;
+    justify-content:center;
+    gap:8px;
+    flex-wrap:wrap;
+    margin:15px;
+}
+
+.playCard{
+    display:flex;
+    width:58px;
+    height:82px;
+    align-items:center;
+    justify-content:center;
+    background:#fff;
+    color:#111;
+    font-size:23px;
+    font-weight:bold;
+    border-radius:8px;
+    box-shadow:0 0 10px #fff7;
+}
+
+.redCard{
+    color:#d10036;
+}
+
+.diceArea{
+    text-align:center;
+    font-size:70px;
+    min-height:100px;
+}
+
+.rpsArea{
+    display:flex;
+    justify-content:center;
+    gap:12px;
+    flex-wrap:wrap;
+}
+
+.rpsBtn{
+    font-size:40px;
+    min-width:90px;
+}
+
+.roulette{
+    position:relative;
+    width:260px;
+    height:260px;
+    margin:20px auto;
+    border-radius:50%;
+    border:8px solid #eee;
+    background:conic-gradient(
+        #e60039 0 12.5%,
+        #111 12.5% 25%,
+        #e60039 25% 37.5%,
+        #111 37.5% 50%,
+        #e60039 50% 62.5%,
+        #111 62.5% 75%,
+        #e60039 75% 87.5%,
+        #111 87.5%
+    );
+    box-shadow:0 0 30px #ff008888;
+    transition:transform 3s cubic-bezier(.1,.7,.1,1);
+}
+
+.roulette:before{
+    content:"";
+    position:absolute;
+    width:55px;
+    height:55px;
+    background:#ffd900;
+    border-radius:50%;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    border:5px solid #fff;
+}
+
+.pointer{
+    width:0;
+    height:0;
+    border-left:16px solid transparent;
+    border-right:16px solid transparent;
+    border-top:30px solid var(--yellow);
+    margin:auto;
+    position:relative;
+    z-index:3;
+}
+
+.betRow{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    align-items:center;
+    flex-wrap:wrap;
+}
+
+select,input[type=number]{
+    background:#080814;
+    color:white;
+    border:1px solid var(--cyan);
+    border-radius:10px;
+    padding:10px;
+}
+
+.mobileControl{
+    display:flex;
+    justify-content:center;
+    gap:15px;
+    margin-top:12px;
+}
+
+.mobileControl button{
+    font-size:25px;
+    min-width:70px;
+}
+
+footer{
+    color:#778899;
+    text-align:center;
+    padding:40px 10px;
+}
+
+@media(max-width:600px){
+    header{
+        position:relative;
+    }
+
+    .topbar{
+        justify-content:center;
+    }
+
+    .pointBox{
+        width:100%;
+        text-align:center;
+    }
+
+    .panel{
+        padding:12px;
+    }
+
+    .game{
+        padding:4px;
+    }
+
+    button{
+        padding:10px 14px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="topbar">
+    <div class="logo">🎮 令和ゲームセンター</div>
+
+    <div class="pointBox">
+        💰 POINT
+        <span id="points">1000</span>
+    </div>
+
+    <div class="controls">
+        <button id="soundBtn" onclick="toggleSound()">🔊 効果音 ON</button>
+        <label>
+            音量
+            <input id="volume" type="range" min="0" max="1" step="0.05" value="0.35">
+        </label>
+    </div>
+</div>
+</header>
+
+<main>
+
+<section id="home">
+<div class="hero">
+    <h1>REIWA ARCADE</h1>
+    <p>遊んで、勝って、ポイントを増やせ！</p>
+</div>
+
+<div class="soundPanel">
+    <span>🎧 最初に画面をクリックすると効果音が有効になります</span>
+    <button class="red" onclick="resetPoints()">🔄 ポイントを1000に戻す</button>
+</div>
+
+<div class="grid">
+
+<div class="gameCard">
+    <div class="icon">👾</div>
+    <h2>インベーダー</h2>
+    <p>迫りくる敵をレーザーで撃ち落とせ！</p>
+    <button onclick="openGame('invader')">PLAY</button>
+</div>
+
+<div class="gameCard">
+    <div class="icon">🧱</div>
+    <h2>ブロック崩し</h2>
+    <p>ボールを跳ね返して全部のブロックを破壊！</p>
+    <button onclick="openGame('breakout')">PLAY</button>
+</div>
+
+<div class="gameCard">
+    <div class="icon">🧩</div>
+    <h2>落ちものパズル</h2>
+    <p>ブロックを積んで横一列を完成させよう。</p>
+    <button onclick="openGame('tetris')">PLAY</button>
+</div>
+
+<div class="gameCard">
+    <div class="icon">🎡</div>
+    <h2>ルーレット</h2>
+    <p>赤・黒を予想してポイント勝負！</p>
+    <button onclick="openGame('rouletteGame')">PLAY</button>
+</div>
+
+<div class="gameCard">
+    <div class="icon">🃏</div>
+    <h2>ブラックジャック</h2>
+    <p>21に近づけろ。ディーラーと一騎打ち。</p>
+    <button onclick="openGame('blackjack')">PLAY</button>
+</div>
+
+<div class="gameCard">
+    <div class="icon">♠️</div>
+    <h2>ポーカー</h2>
+    <p>5枚のカードで強い役を作れ！</p>
+    <button onclick="openGame('poker')">PLAY</button>
+</div>
+
+<div class="gameCard">
+    <div class="icon">🎲</div>
+    <h2>サイコロ3個</h2>
+    <p>ピンゾロ・456など特殊役を狙え！</p>
+    <button onclick="openGame('dice')">PLAY</button>
+</div>
+
+<div class="gameCard">
+    <div class="icon">🎯</div>
+    <h2>ターゲット射撃</h2>
+    <p>動くターゲットをクリックして撃て！</p>
+    <button onclick="openGame('shooting')">PLAY</button>
+</div>
+
+<div class="gameCard">
+    <div class="icon">🚀</div>
+    <h2>宇宙戦闘機</h2>
+    <p>宇宙を飛びながら敵機を撃破しよう。</p>
+    <button onclick="openGame('space')">PLAY</button>
+</div>
+
+<div class="gameCard">
+    <div class="icon">✊</div>
+    <h2>じゃんけん</h2>
+    <p>シンプル勝負。勝てばポイント獲得！</p>
+    <button onclick="openGame('rps')">PLAY</button>
+</div>
+
+</div>
+</section>
+
+
+<!-- インベーダー -->
+<section id="invader" class="game">
+<div class="panel">
+<button class="back" onclick="goHome()">← 戻る</button>
+<h2>👾 インベーダー</h2>
+<div class="message" id="invaderMsg">STARTを押してください</div>
+<canvas id="invaderCanvas" width="700" height="450"></canvas>
+<div class="gameActions">
+<button onclick="startInvader()">🚀 START</button>
+</div>
+<div class="mobileControl">
+<button onpointerdown="invLeft=true" onpointerup="invLeft=false">⬅️</button>
+<button onclick="invaderShoot()">🔥</button>
+<button onpointerdown="invRight=true" onpointerup="invRight=false">➡️</button>
+</div>
+<p style="text-align:center;color:#999">PC：← → 移動 / SPACE 発射</p>
+</div>
+</section>
+
+
+<!-- ブロック崩し -->
+<section id="breakout" class="game">
+<div class="panel">
+<button class="back" onclick="goHome()">← 戻る</button>
+<h2>🧱 ブロック崩し</h2>
+<div class="message" id="breakMsg">STARTを押してください</div>
+<canvas id="breakCanvas" width="700" height="450"></canvas>
+<div class="gameActions">
+<button onclick="startBreakout()">🏁 START</button>
+</div>
+<div class="mobileControl">
+<button onpointerdown="breakLeft=true" onpointerup="breakLeft=false">⬅️</button>
+<button onpointerdown="breakRight=true" onpointerup="breakRight=false">➡️</button>
+</div>
+<p style="text-align:center;color:#999">PC：← → でパドル移動</p>
+</div>
+</section>
+
+
+<!-- テトリス -->
+<section id="tetris" class="game">
+<div class="panel">
+<button class="back" onclick="goHome()">← 戻る</button>
+<h2>🧩 落ちものパズル</h2>
+<div class="message" id="tetrisMsg">STARTを押してください</div>
+<canvas id="tetrisCanvas" width="300" height="500"></canvas>
+<div class="gameActions">
+<button onclick="startTetris()">START</button>
+</div>
+<div class="mobileControl">
+<button onclick="moveTet(-1)">⬅️</button>
+<button onclick="rotateTet()">🔄</button>
+<button onclick="moveTet(1)">➡️</button>
+<button onclick="dropTet()">⬇️</button>
+</div>
+<p style="text-align:center;color:#999">PC：← → 移動 / ↑ 回転 / ↓ 落下</p>
+</div>
+</section>
+
+
+<!-- ルーレット -->
+<section id="rouletteGame" class="game">
+<div class="panel">
+<button class="back" onclick="goHome()">← 戻る</button>
+<h2>🎡 ネオンルーレット</h2>
+
+<div class="pointer"></div>
+<div id="wheel" class="roulette"></div>
+
+<div class="betRow">
+<select id="rouletteBet">
+<option value="red">🔴 赤</option>
+<option value="black">⚫ 黒</option>
+</select>
+
+<input id="rouletteAmount" type="number" value="100" min="10" step="10">
+
+<button onclick="spinRoulette()">SPIN!</button>
+</div>
+
+<div class="message" id="rouletteMsg">色を選んでBET！</div>
+</div>
+</section>
+
+
+<!-- ブラックジャック -->
+<section id="blackjack" class="game">
+<div class="panel">
+<button class="back" onclick="goHome()">← 戻る</button>
+<h2>🃏 ブラックジャック</h2>
+
+<h3 style="text-align:center">ディーラー</h3>
+<div id="dealerCards" class="cards"></div>
+
+<h3 style="text-align:center">あなた</h3>
+<div id="playerCards" class="cards"></div>
+
+<div class="message" id="bjMsg">NEW GAMEを押してください</div>
+
+<div class="gameActions">
+<button onclick="startBJ()">NEW GAME - 50P</button>
+<button onclick="bjHit()">HIT</button>
+<button onclick="bjStand()">STAND</button>
+</div>
+</div>
+</section>
+
+
+<!-- ポーカー -->
+<section id="poker" class="game">
+<div class="panel">
+<button class="back" onclick="goHome()">← 戻る</button>
+<h2>♠️ 5カード・ポーカー</h2>
+
+<div id="pokerCards" class="cards"></div>
+<div class="message" id="pokerMsg">50ポイントで勝負！</div>
+
+<div class="gameActions">
+<button onclick="playPoker()">🃏 カードを配る - 50P</button>
+</div>
+
+<p style="text-align:center;color:#aaa">
+ペア / ツーペア / スリーカード / ストレート / フラッシュ /
+フルハウス / フォーカード / ストレートフラッシュ
+</p>
+</div>
+</section>
+
+
+<!-- サイコロ -->
+<section id="dice" class="game">
+<div class="panel">
+<button class="back" onclick="goHome()">← 戻る</button>
+<h2>🎲 サイコロ3個</h2>
+
+<div id="diceArea" class="diceArea">⚀ ⚀ ⚀</div>
+<div class="message" id="diceMsg">1回50ポイント</div>
+
+<div class="gameActions">
+<button onclick="rollDice()">🎲 振る - 50P</button>
+</div>
+
+<p style="text-align:center;color:#aaa">
+ピンゾロ＝500P / 456＝300P / ゾロ目＝200P / 連番＝100P
+</p>
+</div>
+</section>
+
+
+<!-- 射撃 -->
+<section id="shooting" class="game">
+<div class="panel">
+<button class="back" onclick="goHome()">← 戻る</button>
+<h2>🎯 ターゲット射撃</h2>
+<div class="message" id="shootMsg">30秒で何個撃てる？</div>
+<canvas id="shootCanvas" width="700" height="450"></canvas>
+<div class="gameActions">
+<button onclick="startShooting()">🔫 START</button>
+</div>
+</div>
+</section>
+
+
+<!-- 宇宙戦闘機 -->
+<section id="space" class="game">
+<div class="panel">
+<button class="back" onclick="goHome()">← 戻る</button>
+<h2>🚀 宇宙戦闘機</h2>
+<div class="message" id="spaceMsg">敵を撃破せよ</div>
+<canvas id="spaceCanvas" width="700" height="450"></canvas>
+<div class="gameActions">
+<button onclick="startSpace()">🚀 START</button>
+</div>
+<div class="mobileControl">
+<button onpointerdown="spaceLeft=true" onpointerup="spaceLeft=false">⬅️</button>
+<button onclick="spaceShoot()">🔥</button>
+<button onpointerdown="spaceRight=true" onpointerup="spaceRight=false">➡️</button>
+</div>
+<p style="text-align:center;color:#999">PC：← → 移動 / SPACE 発射</p>
+</div>
+</section>
+
+
+<!-- じゃんけん -->
+<section id="rps" class="game">
+<div class="panel">
+<button class="back" onclick="goHome()">← 戻る</button>
+<h2>✊ じゃんけん</h2>
+
+<div class="rpsArea">
+<button class="rpsBtn" onclick="playRPS(0)">✊</button>
+<button class="rpsBtn" onclick="playRPS(1)">✌️</button>
+<button class="rpsBtn" onclick="playRPS(2)">🖐️</button>
+</div>
+
+<div class="message" id="rpsMsg">1回20ポイント。勝てば60ポイント獲得！</div>
+</div>
+</section>
+
+</main>
+
+<footer>
+令和ゲームセンター / REIWA ARCADE
+</footer>
+
+
+<script>
+/* =========================================================
+   共通ポイント
+========================================================= */
+
+let points = Number(localStorage.getItem("reiwaPoints"));
+
+if (!Number.isFinite(points)) {
+    points = 1000;
+}
+
+function updatePoints(){
+    if(points < 0) points = 0;
+    localStorage.setItem("reiwaPoints", points);
+    document.getElementById("points").textContent = points;
+}
+
+function addPoints(n){
+    points += n;
+    updatePoints();
+
+    if(n > 0){
+        sound("coin");
+    }
+}
+
+function spend(n){
+    if(points < n){
+        alert("ポイントが足りません。");
+        if(points === 0){
+            alert("上の「ポイントを1000に戻す」ボタンで再スタートできます。");
+        }
+        return false;
+    }
+
+    points -= n;
+    updatePoints();
+    return true;
+}
+
+function resetPoints(){
+    if(confirm("ポイントを1000に戻しますか？")){
+        points = 1000;
+        updatePoints();
+        sound("win");
+    }
+}
+
+updatePoints();
+
+
+/* =========================================================
+   画面切替
+========================================================= */
+
+function openGame(id){
+    enableAudio();
+    sound("button");
+
+    document.getElementById("home").style.display = "none";
+
+    document.querySelectorAll(".game").forEach(g=>{
+        g.classList.remove("active");
+    });
+
+    document.getElementById(id).classList.add("active");
+    window.scrollTo(0,0);
+}
+
+function goHome(){
+    sound("button");
+
+    document.querySelectorAll(".game").forEach(g=>{
+        g.classList.remove("active");
+    });
+
+    document.getElementById("home").style.display = "block";
+    window.scrollTo(0,0);
+}
+
+
+/* =========================================================
+   WEB AUDIO 効果音
+========================================================= */
+
+let audioCtx = null;
+let soundEnabled = true;
+
+function enableAudio(){
+    if(!audioCtx){
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if(AC){
+            audioCtx = new AC();
+        }
+    }
+
+    if(audioCtx && audioCtx.state === "suspended"){
+        audioCtx.resume();
+    }
+}
+
+document.addEventListener("pointerdown",enableAudio,{once:false});
+
+function volume(){
+    return Number(document.getElementById("volume").value);
+}
+
+function tone(freq=440,duration=.1,type="square",gain=.15,delay=0){
+    if(!soundEnabled) return;
+
+    enableAudio();
+    if(!audioCtx) return;
+
+    const osc = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+
+    osc.type = type;
+    osc.frequency.value = freq;
+
+    g.gain.setValueAtTime(
+        Math.max(.0001,gain * volume()),
+        audioCtx.currentTime + delay
+    );
+
+    g.gain.exponentialRampToValueAtTime(
+        .0001,
+        audioCtx.currentTime + delay + duration
+    );
+
+    osc.connect(g);
+    g.connect(audioCtx.destination);
+
+    osc.start(audioCtx.currentTime + delay);
+    osc.stop(audioCtx.currentTime + delay + duration);
+}
+
+function noise(duration=.15,gain=.12){
+    if(!soundEnabled) return;
+
+    enableAudio();
+    if(!audioCtx) return;
+
+    const size = Math.max(1,Math.floor(audioCtx.sampleRate * duration));
+    const buffer = audioCtx.createBuffer(1,size,audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+
+    for(let i=0;i<size;i++){
+        data[i] = Math.random()*2-1;
+    }
+
+    const src = audioCtx.createBufferSource();
+    const g = audioCtx.createGain();
+
+    src.buffer = buffer;
+
+    g.gain.setValueAtTime(
+        gain * volume(),
+        audioCtx.currentTime
+    );
+
+    g.gain.exponentialRampToValueAtTime(
+        .0001,
+        audioCtx.currentTime + duration
+    );
+
+    src.connect(g);
+    g.connect(audioCtx.destination);
+
+    src.start();
+}
+
+function sound(name){
+
+    if(!soundEnabled) return;
+
+    switch(name){
+
+        case "button":
+            tone(500,.05,"square",.12);
+            tone(750,.06,"square",.10,.05);
+            break;
+
+        case "start":
+            tone(300,.08,"sawtooth",.12);
+            tone(500,.08,"sawtooth",.12,.08);
+            tone(800,.12,"sawtooth",.12,.16);
+            break;
+
+        case "win":
+            tone(523,.12,"square",.12);
+            tone(659,.12,"square",.12,.12);
+            tone(784,.15,"square",.12,.24);
+            tone(1046,.3,"square",.12,.38);
+            break;
+
+        case "lose":
+            tone(350,.18,"sawtooth",.12);
+            tone(260,.18,"sawtooth",.12,.15);
+            tone(180,.35,"sawtooth",.12,.30);
+            break;
+
+        case "coin":
+            tone(1100,.06,"square",.09);
+            tone(1500,.12,"square",.08,.06);
+            break;
+
+        case "shoot":
+            tone(900,.04,"square",.13);
+            tone(300,.08,"sawtooth",.08,.02);
+            break;
+
+        case "explosion":
+            noise(.28,.25);
+            tone(90,.25,"sawtooth",.16);
+            break;
+
+        case "block":
+            tone(650,.05,"square",.08);
+            tone(850,.05,"square",.07,.04);
+            break;
+
+        case "invader":
+            tone(420,.04,"square",.08);
+            tone(180,.09,"square",.08,.03);
+            break;
+
+        case "card":
+            noise(.07,.06);
+            tone(250,.04,"triangle",.04);
+            break;
+
+        case "dice":
+            for(let i=0;i<7;i++){
+                tone(
+                    160 + Math.random()*200,
+                    .035,
+                    "square",
+                    .045,
+                    i*.045
+                );
+            }
+            break;
+
+        case "roulette":
+            tone(600,.025,"square",.04);
+            break;
+    }
+}
+
+function toggleSound(){
+    soundEnabled = !soundEnabled;
+
+    document.getElementById("soundBtn").textContent =
+        soundEnabled ? "🔊 効果音 ON" : "🔇 効果音 OFF";
+
+    if(soundEnabled){
+        enableAudio();
+        sound("button");
+    }
+}
+
+
+/* =========================================================
+   キーボード
+========================================================= */
+
+const keys = {};
+
+window.addEventListener("keydown",e=>{
+    keys[e.key] = true;
+
+    if(e.key === "ArrowLeft" || e.key === "ArrowRight" ||
+       e.key === "ArrowDown" || e.key === "ArrowUp" ||
+       e.code === "Space"){
+        e.preventDefault();
+    }
+
+    if(e.code === "Space"){
+        invaderShoot();
+        spaceShoot();
+    }
+
+    if(e.key === "ArrowUp"){
+        rotateTet();
+    }
+
+    if(e.key === "ArrowDown"){
+        dropTet();
+    }
+});
+
+window.addEventListener("keyup",e=>{
+    keys[e.key] = false;
+});
+
+
+/* =========================================================
+   インベーダー
+========================================================= */
+
+const invCanvas = document.getElementById("invaderCanvas");
+const invCtx = invCanvas.getContext("2d");
+
+let invRunning=false;
+let invPlayer;
+let invEnemies=[];
+let invBullets=[];
+let invEnemyBullets=[];
+let invScore=0;
+let invLeft=false;
+let invRight=false;
+
+function startInvader(){
+
+    if(invRunning) return;
+
+    sound("start");
+
+    invPlayer={
+        x:invCanvas.width/2-25,
+        y:400,
+        w:50,
+        h:18
+    };
+
+    invEnemies=[];
+    invBullets=[];
+    invEnemyBullets=[];
+    invScore=0;
+
+    for(let r=0;r<4;r++){
+        for(let c=0;c<8;c++){
+            invEnemies.push({
+                x:70+c*70,
+                y:45+r*45,
+                w:35,
+                h:24,
+                alive:true
+            });
+        }
+    }
+
+    invRunning=true;
+    document.getElementById("invaderMsg").textContent="敵を撃破せよ！";
+
+    requestAnimationFrame(invaderLoop);
+}
+
+function invaderShoot(){
+
+    if(!invRunning || !invPlayer) return;
+
+    invBullets.push({
+        x:invPlayer.x+invPlayer.w/2-2,
+        y:invPlayer.y,
+        w:4,
+        h:12
+    });
+
+    sound("shoot");
+}
+
+function invaderLoop(){
+
+    if(!invRunning) return;
+
+    if(keys.ArrowLeft || invLeft){
+        invPlayer.x-=6;
+    }
+
+    if(keys.ArrowRight || invRight){
+        invPlayer.x+=6;
+    }
+
+    invPlayer.x=Math.max(0,Math.min(invCanvas.width-invPlayer.w,invPlayer.x));
+
+    invBullets.forEach(b=>b.y-=8);
+
+    invBullets=invBullets.filter(b=>b.y>-20);
+
+    for(const b of invBullets){
+        for(const e of invEnemies){
+            if(e.alive && hit(b,e)){
+                e.alive=false;
+                b.y=-100;
+                invScore++;
+                sound("invader");
+            }
+        }
+    }
+
+    if(Math.random()<.025){
+        const alive=invEnemies.filter(e=>e.alive);
+
+        if(alive.length){
+            const e=alive[Math.floor(Math.random()*alive.length)];
+
+            invEnemyBullets.push({
+                x:e.x+15,
+                y:e.y+20,
+                w:5,
+                h:10
+            });
+        }
+    }
+
+    invEnemyBullets.forEach(b=>b.y+=5);
+
+    for(const b of invEnemyBullets){
+        if(hit(b,invPlayer)){
+            invRunning=false;
+            sound("explosion");
+            sound("lose");
+
+            document.getElementById("invaderMsg").textContent =
+                "GAME OVER　撃破 "+invScore+"体";
+
+            return drawInvader();
+        }
+    }
+
+    invEnemyBullets=invEnemyBullets.filter(b=>b.y<invCanvas.height+20);
+
+    if(invEnemies.every(e=>!e.alive)){
+        invRunning=false;
+
+        addPoints(300);
+        sound("win");
+
+        document.getElementById("invaderMsg").textContent =
+            "全滅成功！ +300ポイント";
+
+        drawInvader();
+        return;
+    }
+
+    drawInvader();
+
+    requestAnimationFrame(invaderLoop);
+}
+
+function drawInvader(){
+
+    invCtx.fillStyle="#000";
+    invCtx.fillRect(0,0,invCanvas.width,invCanvas.height);
+
+    for(let i=0;i<80;i++){
+        const x=(i*83)%invCanvas.width;
+        const y=(i*47)%invCanvas.height;
+        invCtx.fillStyle="#ffffff55";
+        invCtx.fillRect(x,y,2,2);
+    }
+
+    if(invPlayer){
+        invCtx.fillStyle="#00f7ff";
+        invCtx.fillRect(invPlayer.x,invPlayer.y,invPlayer.w,invPlayer.h);
+
+        invCtx.fillStyle="#fff";
+        invCtx.fillRect(invPlayer.x+20,invPlayer.y-10,10,10);
+    }
+
+    invEnemies.forEach(e=>{
+        if(!e.alive) return;
+
+        invCtx.fillStyle="#ff0088";
+        invCtx.fillRect(e.x,e.y,e.w,e.h);
+
+        invCtx.fillStyle="#fff";
+        invCtx.fillRect(e.x+7,e.y+7,5,5);
+        invCtx.fillRect(e.x+23,e.y+7,5,5);
+    });
+
+    invCtx.fillStyle="#00ffff";
+
+    invBullets.forEach(b=>{
+        invCtx.fillRect(b.x,b.y,b.w,b.h);
+    });
+
+    invCtx.fillStyle="#ffcf00";
+
+    invEnemyBullets.forEach(b=>{
+        invCtx.fillRect(b.x,b.y,b.w,b.h);
+    });
+}
+
+
+/* =========================================================
+   ブロック崩し
+========================================================= */
+
+const breakCanvas=document.getElementById("breakCanvas");
+const breakCtx=breakCanvas.getContext("2d");
+
+let breakRunning=false;
+let breakBall;
+let breakPaddle;
+let breakBlocks=[];
+let breakLeft=false;
+let breakRight=false;
+
+function startBreakout(){
+
+    if(breakRunning) return;
+
+    sound("start");
+
+    breakPaddle={
+        x:300,
+        y:415,
+        w:100,
+        h:15
+    };
+
+    breakBall={
+        x:350,
+        y:350,
+        r:8,
+        dx:4,
+        dy:-4
+    };
+
+    breakBlocks=[];
+
+    for(let r=0;r<5;r++){
+        for(let c=0;c<9;c++){
+            breakBlocks.push({
+                x:25+c*74,
+                y:30+r*35,
+                w:64,
+                h:22,
+                alive:true
+            });
+        }
+    }
+
+    breakRunning=true;
+
+    document.getElementById("breakMsg").textContent="全部壊せ！";
+
+    requestAnimationFrame(breakLoop);
+}
+
+function breakLoop(){
+
+    if(!breakRunning) return;
+
+    if(keys.ArrowLeft || breakLeft){
+        breakPaddle.x-=7;
+    }
+
+    if(keys.ArrowRight || breakRight){
+        breakPaddle.x+=7;
+    }
+
+    breakPaddle.x=Math.max(0,Math.min(
+        breakCanvas.width-breakPaddle.w,
+        breakPaddle.x
+    ));
+
+    breakBall.x+=breakBall.dx;
+    breakBall.y+=breakBall.dy;
+
+    if(breakBall.x<breakBall.r ||
+       breakBall.x>breakCanvas.width-breakBall.r){
+        breakBall.dx*=-1;
+    }
+
+    if(breakBall.y<breakBall.r){
+        breakBall.dy=Math.abs(breakBall.dy);
+    }
+
+    if(
+        breakBall.y+breakBall.r>=breakPaddle.y &&
+        breakBall.y<breakPaddle.y+20 &&
+        breakBall.x>=breakPaddle.x &&
+        breakBall.x<=breakPaddle.x+breakPaddle.w &&
+        breakBall.dy>0
+    ){
+        breakBall.dy=-Math.abs(breakBall.dy);
+
+        const offset=
+            (breakBall.x-(breakPaddle.x+breakPaddle.w/2))
+            /(breakPaddle.w/2);
+
+        breakBall.dx=offset*6;
+    }
+
+    for(const b of breakBlocks){
+
+        if(!b.alive) continue;
+
+        if(
+            breakBall.x>b.x &&
+            breakBall.x<b.x+b.w &&
+            breakBall.y>b.y &&
+            breakBall.y<b.y+b.h
+        ){
+            b.alive=false;
+            breakBall.dy*=-1;
+            sound("block");
+            break;
+        }
+    }
+
+    if(breakBall.y>breakCanvas.height+20){
+        breakRunning=false;
+        sound("lose");
+
+        document.getElementById("breakMsg").textContent="GAME OVER";
+
+        drawBreakout();
+        return;
+    }
+
+    if(breakBlocks.every(b=>!b.alive)){
+        breakRunning=false;
+
+        addPoints(250);
+        sound("win");
+
+        document.getElementById("breakMsg").textContent =
+            "CLEAR! +250ポイント";
+
+        drawBreakout();
+        return;
+    }
+
+    drawBreakout();
+
+    requestAnimationFrame(breakLoop);
+}
+
+function drawBreakout(){
+
+    breakCtx.fillStyle="#000";
+    breakCtx.fillRect(0,0,breakCanvas.width,breakCanvas.height);
+
+    if(!breakPaddle) return;
+
+    breakBlocks.forEach((b,i)=>{
+        if(!b.alive) return;
+
+        const colors=["#00f7ff","#ff0088","#9b00ff","#ffe600","#00ff88"];
+
+        breakCtx.fillStyle=colors[Math.floor(i/9)%colors.length];
+        breakCtx.fillRect(b.x,b.y,b.w,b.h);
+    });
+
+    breakCtx.fillStyle="#fff";
+    breakCtx.fillRect(
+        breakPaddle.x,
+        breakPaddle.y,
+        breakPaddle.w,
+        breakPaddle.h
+    );
+
+    breakCtx.beginPath();
+    breakCtx.arc(
+        breakBall.x,
+        breakBall.y,
+        breakBall.r,
+        0,
+        Math.PI*2
+    );
+    breakCtx.fillStyle="#00ffff";
+    breakCtx.fill();
+}
+
+
+/* =========================================================
+   落ちものパズル
+========================================================= */
+
+const tetCanvas=document.getElementById("tetrisCanvas");
+const tetCtx=tetCanvas.getContext("2d");
+
+const COLS=10;
+const ROWS=20;
+const CELL=25;
+
+let tetBoard=[];
+let tetPiece=null;
+let tetRunning=false;
+let tetTimer=null;
+
+const tetShapes=[
+    [[1,1,1,1]],
+    [[1,1],[1,1]],
+    [[0,1,0],[1,1,1]],
+    [[1,0,0],[1,1,1]],
+    [[0,0,1],[1,1,1]],
+    [[1,1,0],[0,1,1]],
+    [[0,1,1],[1,1,0]]
+];
+
+function blankBoard(){
+    return Array.from(
+        {length:ROWS},
+        ()=>Array(COLS).fill(0)
+    );
+}
+
+function startTetris(){
+
+    clearInterval(tetTimer);
+
+    tetBoard=blankBoard();
+    tetRunning=true;
+
+    spawnTet();
+    sound("start");
+
+    document.getElementById("tetrisMsg").textContent="ラインを消せ！";
+
+    tetTimer=setInterval(()=>{
+        dropTet();
+    },550);
+
+    drawTetris();
+}
+
+function spawnTet(){
+
+    const shape=
+        tetShapes[Math.floor(Math.random()*tetShapes.length)]
+        .map(r=>[...r]);
+
+    tetPiece={
+        shape,
+        x:Math.floor(COLS/2)-Math.ceil(shape[0].length/2),
+        y:0
+    };
+
+    if(collisionTet(0,0,tetPiece.shape)){
+        tetRunning=false;
+        clearInterval(tetTimer);
+
+        sound("lose");
+
+        document.getElementById("tetrisMsg").textContent="GAME OVER";
+    }
+}
+
+function collisionTet(dx,dy,shape){
+
+    for(let y=0;y<shape.length;y++){
+        for(let x=0;x<shape[y].length;x++){
+
+            if(!shape[y][x]) continue;
+
+            const nx=tetPiece.x+x+dx;
+            const ny=tetPiece.y+y+dy;
+
+            if(nx<0 || nx>=COLS || ny>=ROWS){
+                return true;
+            }
+
+            if(ny>=0 && tetBoard[ny][nx]){
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+function moveTet(dx){
+
+    if(!tetRunning || !tetPiece) return;
+
+    if(!collisionTet(dx,0,tetPiece.shape)){
+        tetPiece.x+=dx;
+        drawTetris();
+    }
+}
+
+function rotateTet(){
+
+    if(!tetRunning || !tetPiece) return;
+
+    const rotated=
+        tetPiece.shape[0].map((_,i)=>
+            tetPiece.shape.map(row=>row[i]).reverse()
+        );
+
+    if(!collisionTet(0,0,rotated)){
+        tetPiece.shape=rotated;
+        sound("button");
+        drawTetris();
+    }
+}
+
+function dropTet(){
+
+    if(!tetRunning || !tetPiece) return;
+
+    if(!collisionTet(0,1,tetPiece.shape)){
+        tetPiece.y++;
+    }else{
+        lockTet();
+        clearLines();
+        spawnTet();
+    }
+
+    drawTetris();
+}
+
+function lockTet(){
+
+    tetPiece.shape.forEach((row,y)=>{
+        row.forEach((v,x)=>{
+            if(v && tetPiece.y+y>=0){
+                tetBoard[tetPiece.y+y][tetPiece.x+x]=1;
+            }
+        });
+    });
+}
+
+function clearLines(){
+
+    let cleared=0;
+
+    for(let y=ROWS-1;y>=0;y--){
+        if(tetBoard[y].every(v=>v)){
+            tetBoard.splice(y,1);
+            tetBoard.unshift(Array(COLS).fill(0));
+            cleared++;
+            y++;
+        }
+    }
+
+    if(cleared){
+        addPoints(cleared*50);
+        sound("block");
+
+        document.getElementById("tetrisMsg").textContent =
+            cleared+"ライン！ +"+(cleared*50)+"P";
+    }
+}
+
+function drawTetris(){
+
+    tetCtx.fillStyle="#000";
+    tetCtx.fillRect(0,0,tetCanvas.width,tetCanvas.height);
+
+    for(let y=0;y<ROWS;y++){
+        for(let x=0;x<COLS;x++){
+
+            tetCtx.strokeStyle="#15202b";
+            tetCtx.strokeRect(
+                x*CELL,
+                y*CELL,
+                CELL,
+                CELL
+            );
+
+            if(tetBoard[y][x]){
+                tetCtx.fillStyle="#00f7ff";
+                tetCtx.fillRect(
+                    x*CELL+1,
+                    y*CELL+1,
+                    CELL-2,
+                    CELL-2
+                );
+            }
+        }
+    }
+
+    if(tetPiece){
+        tetCtx.fillStyle="#ff0088";
+
+        tetPiece.shape.forEach((row,y)=>{
+            row.forEach((v,x)=>{
+                if(v){
+                    tetCtx.fillRect(
+                        (tetPiece.x+x)*CELL+1,
+                        (tetPiece.y+y)*CELL+1,
+                        CELL-2,
+                        CELL-2
+                    );
+                }
+            });
+        });
+    }
+}
+
+
+/* =========================================================
+   ルーレット
+========================================================= */
+
+let wheelTurns=0;
+let rouletteBusy=false;
+
+function spinRoulette(){
+
+    if(rouletteBusy) return;
+
+    const amount=
+        Math.max(10,Number(
+            document.getElementById("rouletteAmount").value
+        )||10);
+
+    if(!spend(amount)) return;
+
+    rouletteBusy=true;
+
+    const choice=document.getElementById("rouletteBet").value;
+    const result=Math.random()<.5 ? "red" : "black";
+
+    wheelTurns+=
+        1440+
+        Math.floor(Math.random()*360);
+
+    document.getElementById("wheel").style.transform=
+        `rotate(${wheelTurns}deg)`;
+
+    document.getElementById("rouletteMsg").textContent=
+        "ルーレット回転中...";
+
+    let ticks=0;
+
+    const tick=setInterval(()=>{
+        sound("roulette");
+        ticks++;
+
+        if(ticks>22){
+            clearInterval(tick);
+        }
+    },110);
+
+    setTimeout(()=>{
+
+        rouletteBusy=false;
+
+        if(choice===result){
+
+            addPoints(amount*2);
+            sound("win");
+
+            document.getElementById("rouletteMsg").textContent=
+                (result==="red"?"🔴 赤":"⚫ 黒")+
+                "！ 的中！ +"+amount+"P";
+
+        }else{
+
+            sound("lose");
+
+            document.getElementById("rouletteMsg").textContent=
+                (result==="red"?"🔴 赤":"⚫ 黒")+
+                "！ ハズレ -"+amount+"P";
+        }
+
+    },3000);
+}
+
+
+/* =========================================================
+   カード共通
+========================================================= */
+
+function createDeck(){
+
+    const suits=["♠","♥","♦","♣"];
+    const ranks=[
+        {n:"A",v:1},
+        {n:"2",v:2},
+        {n:"3",v:3},
+        {n:"4",v:4},
+        {n:"5",v:5},
+        {n:"6",v:6},
+        {n:"7",v:7},
+        {n:"8",v:8},
+        {n:"9",v:9},
+        {n:"10",v:10},
+        {n:"J",v:11},
+        {n:"Q",v:12},
+        {n:"K",v:13}
+    ];
+
+    const deck=[];
+
+    suits.forEach(s=>{
+        ranks.forEach(r=>{
+            deck.push({
+                suit:s,
+                rank:r.n,
+                value:r.v
+            });
+        });
+    });
+
+    for(let i=deck.length-1;i>0;i--){
+        const j=Math.floor(Math.random()*(i+1));
+        [deck[i],deck[j]]=[deck[j],deck[i]];
+    }
+
+    return deck;
+}
+
+function cardHTML(card){
+
+    const red=
+        card.suit==="♥" || card.suit==="♦";
+
+    return `<div class="playCard ${red?"redCard":""}">
+        ${card.rank}${card.suit}
+    </div>`;
+}
+
+
+/* =========================================================
+   ブラックジャック
+========================================================= */
+
+let bjDeck=[];
+let bjPlayer=[];
+let bjDealer=[];
+let bjActive=false;
+
+function bjValue(hand){
+
+    let total=0;
+    let aces=0;
+
+    hand.forEach(c=>{
+        if(c.rank==="A"){
+            total+=11;
+            aces++;
+        }else{
+            total+=Math.min(c.value,10);
+        }
+    });
+
+    while(total>21 && aces>0){
+        total-=10;
+        aces--;
+    }
+
+    return total;
+}
+
+function renderBJ(hideDealer=false){
+
+    document.getElementById("playerCards").innerHTML=
+        bjPlayer.map(cardHTML).join("");
+
+    if(hideDealer && bjDealer.length){
+        document.getElementById("dealerCards").innerHTML=
+            cardHTML(bjDealer[0])+
+            `<div class="playCard">?</div>`;
+    }else{
+        document.getElementById("dealerCards").innerHTML=
+            bjDealer.map(cardHTML).join("");
+    }
+}
+
+function startBJ(){
+
+    if(!spend(50)) return;
+
+    bjDeck=createDeck();
+    bjPlayer=[bjDeck.pop(),bjDeck.pop()];
+    bjDealer=[bjDeck.pop(),bjDeck.pop()];
+    bjActive=true;
+
+    sound("card");
+
+    renderBJ(true);
+
+    document.getElementById("bjMsg").textContent=
+        "あなた："+bjValue(bjPlayer);
+
+    if(bjValue(bjPlayer)===21){
+        bjStand();
+    }
+}
+
+function bjHit(){
+
+    if(!bjActive) return;
+
+    bjPlayer.push(bjDeck.pop());
+
+    sound("card");
+
+    renderBJ(true);
+
+    const value=bjValue(bjPlayer);
+
+    document.getElementById("bjMsg").textContent=
+        "あなた："+value;
+
+    if(value>21){
+        bjActive=false;
+        sound("lose");
+        renderBJ(false);
+
+        document.getElementById("bjMsg").textContent=
+            "BUST！ 負け";
+    }
+}
+
+function bjStand(){
+
+    if(!bjActive) return;
+
+    while(bjValue(bjDealer)<17){
+        bjDealer.push(bjDeck.pop());
+        sound("card");
+    }
+
+    bjActive=false;
+
+    const p=bjValue(bjPlayer);
+    const d=bjValue(bjDealer);
+
+    renderBJ(false);
+
+    if(p<=21 && (d>21 || p>d)){
+        addPoints(100);
+        sound("win");
+
+        document.getElementById("bjMsg").textContent=
+            `勝ち！ あなた${p} / Dealer${d}　+50P`;
+
+    }else if(p===d){
+        addPoints(50);
+
+        document.getElementById("bjMsg").textContent=
+            `引き分け あなた${p} / Dealer${d}`;
+
+    }else{
+        sound("lose");
+
+        document.getElementById("bjMsg").textContent=
+            `負け あなた${p} / Dealer${d}`;
+    }
+}
+
+
+/* =========================================================
+   ポーカー
+========================================================= */
+
+function playPoker(){
+
+    if(!spend(50)) return;
+
+    const deck=createDeck();
+    const hand=[];
+
+    for(let i=0;i<5;i++){
+        hand.push(deck.pop());
+    }
+
+    document.getElementById("pokerCards").innerHTML=
+        hand.map(cardHTML).join("");
+
+    sound("card");
+
+    const result=evaluatePoker(hand);
+
+    let payout=0;
+
+    switch(result){
+
+        case "ストレートフラッシュ":
+            payout=1000;
+            break;
+
+        case "フォーカード":
+            payout=600;
+            break;
+
+        case "フルハウス":
+            payout=350;
+            break;
+
+        case "フラッシュ":
+            payout=250;
+            break;
+
+        case "ストレート":
+            payout=200;
+            break;
+
+        case "スリーカード":
+            payout=150;
+            break;
+
+        case "ツーペア":
+            payout=100;
+            break;
+
+        case "ワンペア":
+            payout=60;
+            break;
+
+        default:
+            payout=0;
+    }
+
+    if(payout){
+        addPoints(payout);
+        sound("win");
+
+        document.getElementById("pokerMsg").textContent=
+            `${result}！ +${payout-50}P`;
+
+    }else{
+        sound("lose");
+
+        document.getElementById("pokerMsg").textContent=
+            "ノーペア -50P";
+    }
+}
+
+function evaluatePoker(hand){
+
+    const values=
+        hand.map(c=>c.value)
+        .sort((a,b)=>a-b);
+
+    const counts={};
+
+    values.forEach(v=>{
+        counts[v]=(counts[v]||0)+1;
+    });
+
+    const groups=
+        Object.values(counts).sort((a,b)=>b-a);
+
+    const flush=
+        hand.every(c=>c.suit===hand[0].suit);
+
+    let unique=[...new Set(values)];
+
+    if(unique.includes(1)){
+        unique.push(14);
+    }
+
+    unique.sort((a,b)=>a-b);
+
+    let straight=false;
+
+    for(let i=0;i<=unique.length-5;i++){
+        if(unique[i+4]-unique[i]===4){
+            straight=true;
+        }
+    }
+
+    if(straight && flush) return "ストレートフラッシュ";
+    if(groups[0]===4) return "フォーカード";
+    if(groups[0]===3 && groups[1]===2) return "フルハウス";
+    if(flush) return "フラッシュ";
+    if(straight) return "ストレート";
+    if(groups[0]===3) return "スリーカード";
+    if(groups[0]===2 && groups[1]===2) return "ツーペア";
+    if(groups[0]===2) return "ワンペア";
+
+    return "ノーペア";
+}
+
+
+/* =========================================================
+   サイコロ
+========================================================= */
+
+const diceFaces=["⚀","⚁","⚂","⚃","⚄","⚅"];
+
+function rollDice(){
+
+    if(!spend(50)) return;
+
+    sound("dice");
+
+    document.getElementById("diceMsg").textContent=
+        "サイコロ回転中...";
+
+    let spin=0;
+
+    const anim=setInterval(()=>{
+
+        const temp=[
+            Math.floor(Math.random()*6),
+            Math.floor(Math.random()*6),
+            Math.floor(Math.random()*6)
+        ];
+
+        document.getElementById("diceArea").textContent=
+            temp.map(n=>diceFaces[n]).join(" ");
+
+        spin++;
+
+        if(spin>=10){
+
+            clearInterval(anim);
+
+            const d=[
+                1+Math.floor(Math.random()*6),
+                1+Math.floor(Math.random()*6),
+                1+Math.floor(Math.random()*6)
+            ];
+
+            finishDice(d);
+        }
+
+    },80);
+}
+
+function finishDice(d){
+
+    document.getElementById("diceArea").textContent=
+        d.map(n=>diceFaces[n-1]).join(" ");
+
+    const sorted=[...d].sort((a,b)=>a-b);
+
+    let prize=0;
+    let name="ハズレ";
+
+    if(d.every(n=>n===1)){
+        prize=500;
+        name="ピンゾロ！";
+
+    }else if(sorted.join("")==="456"){
+        prize=300;
+        name="456！";
+
+    }else if(d[0]===d[1] && d[1]===d[2]){
+        prize=200;
+        name="ゾロ目！";
+
+    }else if(
+        sorted[1]===sorted[0]+1 &&
+        sorted[2]===sorted[1]+1
+    ){
+        prize=100;
+        name="連番！";
+    }
+
+    if(prize){
+
+        addPoints(prize);
+        sound("win");
+
+        document.getElementById("diceMsg").textContent=
+            `${name} +${prize-50}P`;
+
+    }else{
+
+        sound("lose");
+
+        document.getElementById("diceMsg").textContent=
+            "ハズレ -50P";
+    }
+}
+
+
+/* =========================================================
+   射撃ゲーム
+========================================================= */
+
+const shootCanvas=document.getElementById("shootCanvas");
+const shootCtx=shootCanvas.getContext("2d");
+
+let shootRunning=false;
+let shootTarget=null;
+let shootScore=0;
+let shootEnd=0;
+let shootAnim=null;
+
+function newTarget(){
+
+    shootTarget={
+        x:40+Math.random()*(shootCanvas.width-80),
+        y:40+Math.random()*(shootCanvas.height-80),
+        r:20+Math.random()*15,
+        dx:(Math.random()-.5)*5,
+        dy:(Math.random()-.5)*5
+    };
+}
+
+function startShooting(){
+
+    if(shootRunning) return;
+
+    sound("start");
+
+    shootRunning=true;
+    shootScore=0;
+    shootEnd=Date.now()+30000;
+
+    newTarget();
+
+    requestAnimationFrame(shootLoop);
+}
+
+shootCanvas.addEventListener("pointerdown",e=>{
+
+    if(!shootRunning || !shootTarget) return;
+
+    const rect=shootCanvas.getBoundingClientRect();
+
+    const x=
+        (e.clientX-rect.left)*
+        (shootCanvas.width/rect.width);
+
+    const y=
+        (e.clientY-rect.top)*
+        (shootCanvas.height/rect.height);
+
+    const dist=
+        Math.hypot(
+            x-shootTarget.x,
+            y-shootTarget.y
+        );
+
+    sound("shoot");
+
+    if(dist<=shootTarget.r){
+
+        shootScore++;
+        addPoints(5);
+        sound("explosion");
+
+        newTarget();
+    }
+});
+
+function shootLoop(){
+
+    if(!shootRunning) return;
+
+    if(Date.now()>=shootEnd){
+
+        shootRunning=false;
+        sound("win");
+
+        document.getElementById("shootMsg").textContent=
+            `終了！ ${shootScore} HIT`;
+
+        drawShoot();
+        return;
+    }
+
+    shootTarget.x+=shootTarget.dx;
+    shootTarget.y+=shootTarget.dy;
+
+    if(
+        shootTarget.x<shootTarget.r ||
+        shootTarget.x>shootCanvas.width-shootTarget.r
+    ){
+        shootTarget.dx*=-1;
+    }
+
+    if(
+        shootTarget.y<shootTarget.r ||
+        shootTarget.y>shootCanvas.height-shootTarget.r
+    ){
+        shootTarget.dy*=-1;
+    }
+
+    document.getElementById("shootMsg").textContent=
+        `HIT ${shootScore}　残り ${Math.ceil((shootEnd-Date.now())/1000)}秒`;
+
+    drawShoot();
+
+    requestAnimationFrame(shootLoop);
+}
+
+function drawShoot(){
+
+    shootCtx.fillStyle="#02030a";
+    shootCtx.fillRect(
+        0,0,
+        shootCanvas.width,
+        shootCanvas.height
+    );
+
+    if(shootTarget){
+
+        shootCtx.beginPath();
+        shootCtx.arc(
+            shootTarget.x,
+            shootTarget.y,
+            shootTarget.r,
+            0,
+            Math.PI*2
+        );
+
+        shootCtx.fillStyle="#ff0044";
+        shootCtx.fill();
+
+        shootCtx.beginPath();
+        shootCtx.arc(
+            shootTarget.x,
+            shootTarget.y,
+            shootTarget.r*.6,
+            0,
+            Math.PI*2
+        );
+
+        shootCtx.fillStyle="#fff";
+        shootCtx.fill();
+
+        shootCtx.beginPath();
+        shootCtx.arc(
+            shootTarget.x,
+            shootTarget.y,
+            shootTarget.r*.25,
+            0,
+            Math.PI*2
+        );
+
+        shootCtx.fillStyle="#ff0044";
+        shootCtx.fill();
+    }
+}
+
+
+/* =========================================================
+   宇宙戦闘機
+========================================================= */
+
+const spaceCanvas=document.getElementById("spaceCanvas");
+const spaceCtx=spaceCanvas.getContext("2d");
+
+let spaceRunning=false;
+let spacePlayer;
+let spaceBullets=[];
+let spaceEnemies=[];
+let spaceScore=0;
+let spaceFrame=0;
+let spaceLeft=false;
+let spaceRight=false;
+
+function startSpace(){
+
+    if(spaceRunning) return;
+
+    sound("start");
+
+    spacePlayer={
+        x:spaceCanvas.width/2-20,
+        y:390,
+        w:40,
+        h:40
+    };
+
+    spaceBullets=[];
+    spaceEnemies=[];
+    spaceScore=0;
+    spaceFrame=0;
+    spaceRunning=true;
+
+    requestAnimationFrame(spaceLoop);
+}
+
+function spaceShoot(){
+
+    if(!spaceRunning || !spacePlayer) return;
+
+    spaceBullets.push({
+        x:spacePlayer.x+18,
+        y:spacePlayer.y,
+        w:5,
+        h:14
+    });
+
+    sound("shoot");
+}
+
+function spaceLoop(){
+
+    if(!spaceRunning) return;
+
+    spaceFrame++;
+
+    if(keys.ArrowLeft || spaceLeft){
+        spacePlayer.x-=6;
+    }
+
+    if(keys.ArrowRight || spaceRight){
+        spacePlayer.x+=6;
+    }
+
+    spacePlayer.x=
+        Math.max(
+            0,
+            Math.min(
+                spaceCanvas.width-spacePlayer.w,
+                spacePlayer.x
+            )
+        );
+
+    if(spaceFrame%50===0){
+
+        spaceEnemies.push({
+            x:Math.random()*(spaceCanvas.width-40),
+            y:-40,
+            w:38,
+            h:30,
+            speed:2+Math.random()*2
+        });
+    }
+
+    spaceBullets.forEach(b=>b.y-=8);
+    spaceEnemies.forEach(e=>e.y+=e.speed);
+
+    for(const b of spaceBullets){
+        for(const e of spaceEnemies){
+
+            if(!e.dead && hit(b,e)){
+                e.dead=true;
+                b.dead=true;
+
+                spaceScore++;
+                addPoints(5);
+
+                sound("explosion");
+            }
+        }
+    }
+
+    for(const e of spaceEnemies){
+
+        if(!e.dead && hit(e,spacePlayer)){
+            spaceRunning=false;
+
+            sound("explosion");
+            sound("lose");
+
+            document.getElementById("spaceMsg").textContent=
+                `GAME OVER　撃破 ${spaceScore}`;
+
+            drawSpace();
+            return;
+        }
+    }
+
+    spaceBullets=
+        spaceBullets.filter(b=>!b.dead && b.y>-20);
+
+    spaceEnemies=
+        spaceEnemies.filter(e=>!e.dead && e.y<500);
+
+    document.getElementById("spaceMsg").textContent=
+        `撃破 ${spaceScore}　1機 +5P`;
+
+    drawSpace();
+
+    requestAnimationFrame(spaceLoop);
+}
+
+function drawSpace(){
+
+    spaceCtx.fillStyle="#000";
+    spaceCtx.fillRect(
+        0,0,
+        spaceCanvas.width,
+        spaceCanvas.height
+    );
+
+    for(let i=0;i<60;i++){
+        const x=(i*119+spaceFrame)%spaceCanvas.width;
+        const y=(i*71+spaceFrame*2)%spaceCanvas.height;
+
+        spaceCtx.fillStyle="#fff";
+        spaceCtx.fillRect(x,y,2,2);
+    }
+
+    if(spacePlayer){
+
+        spaceCtx.fillStyle="#00f7ff";
+
+        spaceCtx.beginPath();
+
+        spaceCtx.moveTo(
+            spacePlayer.x+20,
+            spacePlayer.y
+        );
+
+        spaceCtx.lineTo(
+            spacePlayer.x,
+            spacePlayer.y+40
+        );
+
+        spaceCtx.lineTo(
+            spacePlayer.x+40,
+            spacePlayer.y+40
+        );
+
+        spaceCtx.closePath();
+        spaceCtx.fill();
+    }
+
+    spaceCtx.fillStyle="#ffe600";
+
+    spaceBullets.forEach(b=>{
+        spaceCtx.fillRect(b.x,b.y,b.w,b.h);
+    });
+
+    spaceEnemies.forEach(e=>{
+
+        spaceCtx.fillStyle="#ff0088";
+
+        spaceCtx.fillRect(
+            e.x,
+            e.y,
+            e.w,
+            e.h
+        );
+    });
+}
+
+
+/* =========================================================
+   じゃんけん
+========================================================= */
+
+function playRPS(player){
+
+    if(!spend(20)) return;
+
+    sound("button");
+
+    const cpu=Math.floor(Math.random()*3);
+    const icons=["✊","✌️","🖐️"];
+
+    let text=
+        `あなた ${icons[player]}　VS　CPU ${icons[cpu]}　`;
+
+    if(player===cpu){
+
+        addPoints(20);
+
+        text+="引き分け";
+
+    }else if(
+        (player===0 && cpu===1) ||
+        (player===1 && cpu===2) ||
+        (player===2 && cpu===0)
+    ){
+
+        addPoints(60);
+        sound("win");
+
+        text+="勝ち！ +40P";
+
+    }else{
+
+        sound("lose");
+
+        text+="負け -20P";
+    }
+
+    document.getElementById("rpsMsg").textContent=text;
+}
+
+
+/* =========================================================
+   当たり判定
+========================================================= */
+
+function hit(a,b){
+
+    return(
+        a.x < b.x+b.w &&
+        a.x+a.w > b.x &&
+        a.y < b.y+b.h &&
+        a.y+a.h > b.y
+    );
+}
+
+
+/* 初期描画 */
+drawInvader();
+drawBreakout();
+drawShoot();
+drawSpace();
+
+</script>
+</body>
+</html>
+"""
+
+@app.route("/")
+def home():
+    return HTML
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
