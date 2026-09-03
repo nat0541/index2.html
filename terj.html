@@ -1,0 +1,4028 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>令和・宝島アドベンチャー</title>
+
+<style>
+*{
+    box-sizing:border-box;
+}
+
+:root{
+    --gold:#ffd86b;
+    --gold2:#ff9f1c;
+    --navy:#03142b;
+    --blue:#062b55;
+    --cyan:#35d9ff;
+    --white:#f6fbff;
+    --danger:#ff4b64;
+}
+
+html,body{
+    margin:0;
+    min-height:100%;
+    font-family:
+        "Yu Gothic",
+        "Hiragino Kaku Gothic ProN",
+        Meiryo,
+        sans-serif;
+    background:#010612;
+    color:white;
+}
+
+body{
+    overflow-x:hidden;
+}
+
+/* ================================
+   背景
+================================ */
+
+#world{
+    position:fixed;
+    inset:0;
+    overflow:hidden;
+    z-index:-10;
+    background:
+        radial-gradient(circle at 50% 10%,rgba(30,103,180,.35),transparent 38%),
+        linear-gradient(#021128 0%,#062a50 55%,#073c60 100%);
+    transition:background 1.4s ease;
+}
+
+#skyGlow{
+    position:absolute;
+    inset:0;
+    opacity:.75;
+    pointer-events:none;
+}
+
+.cloud{
+    position:absolute;
+    width:180px;
+    height:50px;
+    border-radius:60px;
+    background:rgba(255,255,255,.16);
+    filter:blur(1px);
+    animation:cloudMove linear infinite;
+}
+
+.cloud::before,
+.cloud::after{
+    content:"";
+    position:absolute;
+    background:inherit;
+    border-radius:50%;
+}
+
+.cloud::before{
+    width:70px;
+    height:70px;
+    left:28px;
+    top:-30px;
+}
+
+.cloud::after{
+    width:95px;
+    height:80px;
+    right:20px;
+    top:-35px;
+}
+
+.c1{
+    top:12%;
+    left:-220px;
+    animation-duration:32s;
+}
+
+.c2{
+    top:24%;
+    left:-340px;
+    animation-duration:47s;
+    transform:scale(.7);
+}
+
+@keyframes cloudMove{
+    from{transform:translateX(0)}
+    to{transform:translateX(calc(100vw + 600px))}
+}
+
+/* ================================
+   海
+================================ */
+
+#sea{
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    height:37%;
+    overflow:hidden;
+    background:
+        linear-gradient(
+            rgba(32,143,191,.6),
+            rgba(2,45,82,.92)
+        );
+}
+
+.wave{
+    position:absolute;
+    left:-10%;
+    width:120%;
+    height:70px;
+    border-radius:50%;
+    border-top:4px solid rgba(138,232,255,.35);
+    animation:waveMove 3.5s ease-in-out infinite alternate;
+}
+
+.w1{top:18%}
+.w2{top:40%;animation-delay:.8s}
+.w3{top:65%;animation-delay:1.3s}
+
+@keyframes waveMove{
+    from{transform:translateX(-18px) translateY(0)}
+    to{transform:translateX(18px) translateY(9px)}
+}
+
+/* ================================
+   船
+================================ */
+
+#ship{
+    position:absolute;
+    bottom:23%;
+    left:12%;
+    width:180px;
+    height:110px;
+    transform-origin:center bottom;
+    animation:shipFloat 3s ease-in-out infinite;
+    transition:left 1.5s ease;
+}
+
+.shipHull{
+    position:absolute;
+    bottom:0;
+    left:15px;
+    width:150px;
+    height:38px;
+    background:linear-gradient(#8b5127,#3e210f);
+    clip-path:polygon(0 0,100% 0,82% 100%,18% 100%);
+    box-shadow:0 9px 25px rgba(0,0,0,.5);
+}
+
+.shipMast{
+    position:absolute;
+    width:6px;
+    height:92px;
+    background:#7a502d;
+    left:88px;
+    bottom:30px;
+}
+
+.sail{
+    position:absolute;
+    left:94px;
+    bottom:53px;
+    width:65px;
+    height:58px;
+    background:linear-gradient(135deg,#fff6cb,#c7b27c);
+    clip-path:polygon(0 0,100% 50%,0 100%);
+    filter:drop-shadow(0 4px 6px rgba(0,0,0,.4));
+}
+
+.flag{
+    position:absolute;
+    width:35px;
+    height:20px;
+    background:#b61f35;
+    left:93px;
+    bottom:103px;
+    clip-path:polygon(0 0,100% 25%,85% 100%,0 78%);
+}
+
+@keyframes shipFloat{
+    0%,100%{transform:rotate(-2deg) translateY(0)}
+    50%{transform:rotate(2deg) translateY(-9px)}
+}
+
+/* ================================
+   カモメ
+================================ */
+
+#bird{
+    position:absolute;
+    top:20%;
+    left:-100px;
+    font-size:40px;
+    opacity:0;
+}
+
+.flyBird{
+    opacity:1!important;
+    animation:birdFly 8s linear;
+}
+
+@keyframes birdFly{
+    from{
+        left:-100px;
+        transform:translateY(0);
+    }
+    45%{
+        transform:translateY(-70px);
+    }
+    to{
+        left:110%;
+        transform:translateY(20px);
+    }
+}
+
+/* ================================
+   雷
+================================ */
+
+#lightning{
+    position:fixed;
+    inset:0;
+    z-index:60;
+    pointer-events:none;
+    background:white;
+    opacity:0;
+}
+
+.flash{
+    animation:flash .7s;
+}
+
+@keyframes flash{
+    0%{opacity:0}
+    10%{opacity:.95}
+    20%{opacity:0}
+    32%{opacity:.8}
+    44%{opacity:0}
+    100%{opacity:0}
+}
+
+/* ================================
+   メイン
+================================ */
+
+#app{
+    width:min(1050px,96%);
+    margin:0 auto;
+    padding:14px 0 50px;
+}
+
+.title{
+    text-align:center;
+    font-size:clamp(26px,5vw,52px);
+    margin:14px 0 10px;
+    color:var(--gold);
+    text-shadow:
+        0 0 6px #fff,
+        0 0 16px #ffc53d,
+        0 0 38px #ff8b00;
+    letter-spacing:.08em;
+}
+
+.subtitle{
+    text-align:center;
+    opacity:.92;
+    margin-bottom:18px;
+}
+
+/* ================================
+   ステータス
+================================ */
+
+#statusBar{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:8px;
+    position:sticky;
+    top:5px;
+    z-index:20;
+    margin-bottom:12px;
+}
+
+.status{
+    padding:10px 5px;
+    border-radius:13px;
+    background:rgba(3,15,34,.88);
+    border:1px solid rgba(255,216,107,.5);
+    text-align:center;
+    box-shadow:
+        inset 0 0 16px rgba(53,217,255,.08),
+        0 5px 20px rgba(0,0,0,.35);
+    backdrop-filter:blur(8px);
+}
+
+.status small{
+    display:block;
+    color:#9edcf3;
+    font-size:11px;
+}
+
+.status strong{
+    display:block;
+    margin-top:3px;
+    color:#fff4c8;
+    font-size:16px;
+}
+
+/* ================================
+   物語カード
+================================ */
+
+#storyCard{
+    margin-top:185px;
+    padding:24px;
+    min-height:370px;
+    border-radius:24px;
+    border:1px solid rgba(255,215,110,.45);
+    background:
+        linear-gradient(
+            145deg,
+            rgba(1,11,27,.94),
+            rgba(5,28,57,.93)
+        );
+    box-shadow:
+        0 18px 55px rgba(0,0,0,.6),
+        inset 0 0 35px rgba(53,217,255,.06);
+    backdrop-filter:blur(13px);
+}
+
+.sceneNo{
+    color:#78dfff;
+    font-size:14px;
+    letter-spacing:.12em;
+}
+
+#sceneTitle{
+    margin:7px 0 15px;
+    font-size:clamp(25px,4vw,40px);
+    color:var(--gold);
+    text-shadow:0 0 14px rgba(255,190,45,.35);
+}
+
+#storyText{
+    white-space:pre-line;
+    line-height:2;
+    font-size:clamp(17px,2vw,21px);
+    color:#edf8ff;
+    min-height:170px;
+}
+
+.fadeIn{
+    animation:fadeScene .8s ease;
+}
+
+@keyframes fadeScene{
+    from{
+        opacity:0;
+        transform:translateY(15px);
+    }
+    to{
+        opacity:1;
+        transform:none;
+    }
+}
+
+/* ================================
+   ボタン
+================================ */
+
+#choices{
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px;
+    margin-top:22px;
+}
+
+button{
+    font-family:inherit;
+}
+
+.choice,
+.controlBtn,
+.menuBtn{
+    border:none;
+    color:#08203b;
+    font-weight:bold;
+    cursor:pointer;
+    border-radius:15px;
+    padding:14px 14px;
+    background:
+        linear-gradient(#ffe889,#e3a927);
+    box-shadow:
+        0 7px 0 #8d6412,
+        0 11px 22px rgba(0,0,0,.35);
+    transition:.1s;
+}
+
+.choice:hover,
+.controlBtn:hover,
+.menuBtn:hover{
+    filter:brightness(1.1);
+}
+
+.choice:active,
+.controlBtn:active,
+.menuBtn:active{
+    transform:translateY(6px) scale(.98);
+    box-shadow:
+        0 1px 0 #8d6412,
+        0 4px 10px rgba(0,0,0,.3);
+}
+
+/* ================================
+   操作欄
+================================ */
+
+#controls{
+    display:flex;
+    flex-wrap:wrap;
+    gap:9px;
+    margin-top:16px;
+    justify-content:center;
+}
+
+.controlBtn{
+    font-size:13px;
+    padding:10px 12px;
+    background:linear-gradient(#8be8ff,#2ebad9);
+    box-shadow:
+        0 5px 0 #146276,
+        0 8px 16px rgba(0,0,0,.3);
+}
+
+input[type=range]{
+    width:100px;
+}
+
+/* ================================
+   スタート画面
+================================ */
+
+#startScreen{
+    position:fixed;
+    inset:0;
+    z-index:100;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    background:
+        radial-gradient(circle at 50% 22%,#0b4771 0,#031a35 38%,#010611 74%);
+}
+
+.startPanel{
+    width:min(720px,95vw);
+    padding:35px 24px;
+    text-align:center;
+    border:1px solid rgba(255,211,97,.55);
+    border-radius:28px;
+    background:rgba(1,10,24,.82);
+    box-shadow:
+        0 0 70px rgba(18,145,205,.22),
+        inset 0 0 40px rgba(255,190,50,.05);
+}
+
+.startTitle{
+    font-size:clamp(32px,7vw,65px);
+    color:#ffd667;
+    text-shadow:
+        0 0 8px white,
+        0 0 20px #ffbd1a,
+        0 0 48px #ff7400;
+}
+
+.startSub{
+    margin:16px 0 30px;
+    font-size:clamp(16px,3vw,24px);
+}
+
+.menu{
+    display:grid;
+    gap:13px;
+    width:min(420px,95%);
+    margin:auto;
+}
+
+.menuBtn{
+    font-size:18px;
+}
+
+/* ================================
+   宝箱
+================================ */
+
+#treasureOverlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:90;
+    justify-content:center;
+    align-items:center;
+    pointer-events:none;
+    background:radial-gradient(circle,rgba(255,216,60,.18),rgba(0,0,0,.78));
+}
+
+.treasureBox{
+    font-size:150px;
+    animation:treasureGlow 1.3s infinite alternate;
+}
+
+@keyframes treasureGlow{
+    from{
+        transform:scale(.92);
+        filter:drop-shadow(0 0 10px gold);
+    }
+    to{
+        transform:scale(1.08);
+        filter:drop-shadow(0 0 50px #fff06a);
+    }
+}
+
+.goldParticle{
+    position:fixed;
+    top:-30px;
+    z-index:95;
+    pointer-events:none;
+    font-size:28px;
+    animation:coinFall 4s linear forwards;
+}
+
+@keyframes coinFall{
+    to{
+        top:110vh;
+        transform:rotate(700deg);
+    }
+}
+
+/* ================================
+   THE END
+================================ */
+
+.theEnd{
+    font-size:clamp(45px,10vw,110px);
+    text-align:center;
+    color:#ffe680;
+    text-shadow:
+        0 0 8px white,
+        0 0 30px gold,
+        0 0 80px #ff7300;
+    animation:endPulse 1.5s infinite alternate;
+}
+
+@keyframes endPulse{
+    to{
+        letter-spacing:.15em;
+        transform:scale(1.05);
+    }
+}
+
+/* ================================
+   スマホ
+================================ */
+
+@media(max-width:700px){
+
+    #statusBar{
+        grid-template-columns:repeat(3,1fr);
+    }
+
+    #storyCard{
+        margin-top:155px;
+        padding:18px;
+    }
+
+    #choices{
+        grid-template-columns:1fr;
+    }
+
+    #ship{
+        transform:scale(.75);
+        left:4%;
+    }
+
+    .choice{
+        font-size:16px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="world">
+    <div id="skyGlow"></div>
+
+    <div class="cloud c1"></div>
+    <div class="cloud c2"></div>
+
+    <div id="bird">🕊️</div>
+
+    <div id="ship">
+        <div class="shipHull"></div>
+        <div class="shipMast"></div>
+        <div class="sail"></div>
+        <div class="flag"></div>
+    </div>
+
+    <div id="sea">
+        <div class="wave w1"></div>
+        <div class="wave w2"></div>
+        <div class="wave w3"></div>
+    </div>
+</div>
+
+<div id="lightning"></div>
+
+<div id="treasureOverlay">
+    <div class="treasureBox">🧰✨</div>
+</div>
+
+<div id="startScreen">
+    <div class="startPanel">
+
+        <div class="startTitle">
+            令和・宝島<br>アドベンチャー
+        </div>
+
+        <div class="startSub">
+            伝説の宝島を目指し、大海原へ――
+        </div>
+
+        <div class="menu">
+            <button class="menuBtn" onclick="newGame()">
+                ⚓ 冒険を始める
+            </button>
+
+            <button class="menuBtn" onclick="continueGame()">
+                📖 続きから
+            </button>
+
+            <button class="menuBtn" onclick="toggleBGM()">
+                🎵 音楽 ON / OFF
+            </button>
+
+            <button class="menuBtn" onclick="toggleSFX()">
+                🔊 効果音 ON / OFF
+            </button>
+
+            <button class="menuBtn" onclick="toggleNarration()">
+                🎙 ナレーション ON / OFF
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="app">
+
+    <h1 class="title">令和・宝島アドベンチャー</h1>
+
+    <div class="subtitle">
+        伝説の宝島を目指し、大海原へ――
+    </div>
+
+    <div id="statusBar">
+
+        <div class="status">
+            <small>❤️ 体力</small>
+            <strong id="hp">100</strong>
+        </div>
+
+        <div class="status">
+            <small>🍖 食料</small>
+            <strong id="food">100</strong>
+        </div>
+
+        <div class="status">
+            <small>🪙 金貨</small>
+            <strong id="gold">20</strong>
+        </div>
+
+        <div class="status">
+            <small>📍 現在地</small>
+            <strong id="place">港町</strong>
+        </div>
+
+        <div class="status">
+            <small>📅 航海日数</small>
+            <strong id="day">0日</strong>
+        </div>
+
+    </div>
+
+    <main id="storyCard">
+
+        <div class="sceneNo" id="sceneNo">
+            SCENE 01
+        </div>
+
+        <h2 id="sceneTitle">
+            物語の始まり
+        </h2>
+
+        <div id="storyText"></div>
+
+        <div id="choices"></div>
+
+        <div id="controls">
+
+            <button class="controlBtn" onclick="saveGame()">
+                💾 セーブ
+            </button>
+
+            <button class="controlBtn" onclick="toggleBGM()">
+                🎵 BGM
+            </button>
+
+            <button class="controlBtn" onclick="toggleSFX()">
+                🔊 効果音
+            </button>
+
+            <button class="controlBtn" onclick="toggleNarration()">
+                🎙 声
+            </button>
+
+            <button class="controlBtn" onclick="stopNarration()">
+                ⏹ 読み上げ停止
+            </button>
+
+            <button class="controlBtn" onclick="restartGame()">
+                🔄 最初から
+            </button>
+
+            <button class="controlBtn" onclick="deleteSave()">
+                🗑 セーブ削除
+            </button>
+
+            <span style="font-size:13px">
+                声の速さ
+                <input
+                    id="speechRate"
+                    type="range"
+                    min="0.6"
+                    max="1.5"
+                    step="0.1"
+                    value="0.9"
+                >
+            </span>
+
+            <span style="font-size:13px">
+                音量
+                <input
+                    id="volume"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.05"
+                    value="0.45"
+                >
+            </span>
+
+        </div>
+
+    </main>
+
+</div>
+
+<!-- BGM -->
+<audio id="bgm" loop></audio>
+
+<!-- 効果音 -->
+<audio id="sfx"></audio>
+
+<script>
+
+/* =====================================================
+   令和・宝島アドベンチャー
+   GitHub Pages 完全版
+===================================================== */
+
+const SAVE_KEY = "reiwa_treasure_adventure_save_v1";
+
+/* =====================================================
+   音楽ファイル
+===================================================== */
+
+const bgmFiles = {
+
+    port: "bgm_port.mp3",
+
+    departure: "bgm_departure.mp3",
+
+    sea: "bgm_sea.mp3",
+
+    night: "bgm_night.mp3",
+
+    storm: "bgm_storm.mp3",
+
+    pirate: "bgm_pirate.mp3",
+
+    island: "bgm_island.mp3",
+
+    jungle: "bgm_jungle.mp3",
+
+    cave: "bgm_cave.mp3",
+
+    treasure: "bgm_treasure.mp3",
+
+    ending: "bgm_ending.mp3"
+
+};
+
+const sfxFiles = {
+
+    wave: "sfx_wave.mp3",
+
+    seagull: "sfx_seagull.mp3",
+
+    ship: "sfx_ship.mp3",
+
+    wind: "sfx_wind.mp3",
+
+    thunder: "sfx_thunder.mp3",
+
+    bigwave: "sfx_bigwave.mp3",
+
+    cannon: "sfx_cannon.mp3",
+
+    sword: "sfx_sword.mp3",
+
+    jungle: "sfx_jungle.mp3",
+
+    footsteps: "sfx_footsteps.mp3",
+
+    cave: "sfx_cave.mp3",
+
+    bat: "sfx_bat.mp3",
+
+    stone: "sfx_stone.mp3",
+
+    chest: "sfx_chest.mp3",
+
+    coin: "sfx_coin.mp3",
+
+    fanfare: "sfx_fanfare.mp3"
+
+};
+
+/* =====================================================
+   状態
+===================================================== */
+
+let state = {
+
+    scene:0,
+
+    hp:100,
+
+    food:100,
+
+    gold:20,
+
+    place:"港町",
+
+    day:0,
+
+    bgmOn:true,
+
+    sfxOn:true,
+
+    narrationOn:true,
+
+    flags:{}
+
+};
+
+let currentBGM = "";
+
+/* =====================================================
+   物語
+===================================================== */
+
+const scenes = [
+
+/* 0 */
+{
+title:"古い港町",
+place:"港町",
+day:0,
+bgm:"port",
+
+text:`
+海に面した小さな港町。
+
+潮の香りと、カモメの声。
+遠くでは古い帆船のマストが風に揺れている。
+
+あなたは、幼いころから海の向こうにあるという
+「黄金の島」の伝説を聞いて育った。
+
+しかし、その島を本当に見た者はいない。
+
+ある朝。
+
+港の古道具屋で、
+あなたは埃をかぶった木箱を見つけた。
+
+店主が言った。
+
+「そいつは何十年も誰も開けていない箱だ。」
+
+箱の中には――
+古びた羊皮紙が入っていた。
+`,
+
+choices:[
+{
+text:"🗺 羊皮紙を広げる",
+next:1
+},
+{
+text:"👴 店主に箱の由来を聞く",
+next:2
+}
+]
+},
+
+/* 1 */
+{
+title:"宝の地図",
+place:"港町",
+bgm:"port",
+
+text:`
+羊皮紙には、海と島々が描かれていた。
+
+中央には巨大な赤い印。
+
+そして震えるような文字で、
+
+「月が海に沈む夜、
+三つの星が指す先に黄金の島あり」
+
+と記されていた。
+
+地図の隅には、
+奇妙な髑髏の印もある。
+
+これは単なる古地図ではない。
+
+あなたの胸が高鳴った。
+
+もしかすると――
+
+伝説の宝島は、本当に存在する。
+`,
+
+choices:[
+{
+text:"🍺 港の酒場へ行く",
+next:3
+},
+{
+text:"🔍 地図をもっと調べる",
+next:2,
+gold:5
+}
+]
+},
+
+/* 2 */
+{
+title:"失われた船長の日記",
+place:"古道具屋",
+bgm:"port",
+
+text:`
+木箱の底板を調べると、
+小さな隠し扉が見つかった。
+
+中から出てきたのは、
+革張りの日記帳だった。
+
+最後のページにはこうある。
+
+「黄金の島は富を求める者には見えぬ。
+仲間を信じる者だけが、
+最後の門を開くことができる。」
+
+そして署名。
+
+――船長アルバート・レイ。
+
+五十年前に消息を絶った、
+伝説の冒険家だった。
+`,
+
+choices:[
+{
+text:"📖 日記を持って酒場へ",
+next:3,
+gold:5
+}
+]
+},
+
+/* 3 */
+{
+title:"海鳴り亭",
+place:"港の酒場",
+bgm:"port",
+
+text:`
+港で最も古い酒場「海鳴り亭」。
+
+船乗りたちが酒を飲み、
+航海の武勇伝を語っている。
+
+あなたが宝の地図を広げると、
+酒場が急に静まり返った。
+
+白いひげの老人が席を立つ。
+
+「その印……。」
+
+老人は地図を見つめた。
+
+「わしは若いころ、
+その島の近くまで行ったことがある。」
+
+周囲の船乗りがざわめいた。
+`,
+
+choices:[
+{
+text:"👴 老人の話を聞く",
+next:4
+},
+{
+text:"💰 金貨5枚で情報を買う",
+next:4,
+gold:-5
+}
+]
+},
+
+/* 4 */
+{
+title:"老人の警告",
+place:"港の酒場",
+bgm:"port",
+
+text:`
+老人は低い声で語った。
+
+「宝島へ向かった船は何隻もある。」
+
+「だが帰ってきた船は、ほとんどない。」
+
+霧。
+嵐。
+海賊。
+巨大な海の怪物。
+
+そして――
+
+島そのものが、
+人間を試すのだという。
+
+老人は最後に言った。
+
+「それでも行くのか？」
+
+あなたは地図を握りしめた。
+`,
+
+choices:[
+{
+text:"⚓ 行く。船を探す",
+next:5
+},
+{
+text:"🔥 もちろん行く！",
+next:5,
+hp:5
+}
+]
+},
+
+/* 5 */
+{
+title:"古い帆船",
+place:"港",
+bgm:"departure",
+
+text:`
+港の端に、
+一隻の古い帆船が停泊していた。
+
+船の名は――
+
+「蒼海の星号」。
+
+船体には傷が多い。
+だが巨大な帆と太いマストは、
+まだ十分に航海に耐えられそうだ。
+
+船長ガルドが腕を組む。
+
+「宝島だと？」
+
+彼は豪快に笑った。
+
+「面白い。俺も一度、
+命を賭けた航海がしたかったところだ。」
+
+こうして仲間集めが始まった。
+`,
+
+choices:[
+{
+text:"🧭 航海士リナを仲間にする",
+next:6,
+gold:-3
+},
+{
+text:"🔧 機関士バルドを仲間にする",
+next:6,
+hp:3
+}
+]
+},
+
+/* 6 */
+{
+title:"冒険の仲間",
+place:"港",
+bgm:"departure",
+
+text:`
+船長ガルド。
+
+航海士リナ。
+
+力自慢のバルド。
+
+料理人トム。
+
+そしてあなた。
+
+小さな冒険隊が完成した。
+
+リナが地図を広げる。
+
+「最初は東南東へ。」
+
+船長が叫んだ。
+
+「帆を上げろ！」
+
+港の人々が岸壁から手を振る。
+
+いよいよ冒険が始まる。
+`,
+
+choices:[
+{
+text:"⛵ 出航する！",
+next:7,
+day:1,
+food:-5,
+sfx:"ship"
+}
+]
+},
+
+/* 7 */
+{
+title:"さらば故郷",
+place:"沿岸海域",
+day:1,
+bgm:"departure",
+
+text:`
+大きな帆が風を受けた。
+
+蒼海の星号は、
+ゆっくりと港を離れる。
+
+家々が小さくなる。
+
+灯台も遠ざかる。
+
+やがて故郷は水平線の向こうへ消えた。
+
+あなたは船尾から、
+しばらくその方向を見つめていた。
+
+船長ガルドが肩を叩く。
+
+「後ろを見るのはここまでだ。」
+
+「冒険者なら、前を見ろ。」
+`,
+
+choices:[
+{
+text:"🌊 大海原へ進む",
+next:8,
+food:-3
+}
+]
+},
+
+/* 8 */
+{
+title:"青い大海原",
+place:"外洋",
+bgm:"sea",
+
+text:`
+見渡す限りの青。
+
+海はどこまでも続いている。
+
+波は穏やかで、
+蒼海の星号は順調に進んだ。
+
+甲板では船員たちが仕事をしている。
+
+あなたもロープを結び、
+帆の調整を手伝った。
+
+航海士リナが笑う。
+
+「なかなか船乗りらしくなってきたね。」
+`,
+
+choices:[
+{
+text:"🪢 船の仕事を手伝う",
+next:9,
+hp:3
+},
+{
+text:"🗺 地図を研究する",
+next:9
+}
+]
+},
+
+/* 9 */
+{
+title:"カモメの知らせ",
+place:"外洋",
+bgm:"sea",
+
+text:`
+昼過ぎ。
+
+一羽のカモメが帆の周りを旋回し始めた。
+
+「こんな沖にカモメ？」
+
+リナが首をかしげる。
+
+カモメがいるということは、
+どこか近くに陸地がある可能性が高い。
+
+船長は望遠鏡をのぞいた。
+
+しかし水平線には、
+何も見えなかった。
+
+不思議なカモメは、
+東へ向かって飛んでいった。
+`,
+
+choices:[
+{
+text:"🕊 カモメの方向へ進む",
+next:10,
+sfx:"seagull"
+},
+{
+text:"🧭 地図どおり進む",
+next:10
+}
+]
+},
+
+/* 10 */
+{
+title:"太陽の海",
+place:"外洋",
+day:2,
+bgm:"sea",
+
+text:`
+翌日。
+
+太陽が海面を照らし、
+無数の光が波の上で踊っている。
+
+料理人トムが魚を焼いた。
+
+焼きたての魚とパン。
+
+冒険が始まってから初めての、
+ゆったりした昼食だった。
+
+だが船旅では、
+食料の管理も重要だ。
+`,
+
+choices:[
+{
+text:"🍖 たっぷり食べる",
+next:11,
+food:-8,
+hp:10
+},
+{
+text:"🥖 食料を節約する",
+next:11,
+food:-3
+}
+]
+},
+
+/* 11 */
+{
+title:"黄金色の夕焼け",
+place:"外洋",
+bgm:"sea",
+
+text:`
+夕方。
+
+空が黄金色に染まった。
+
+巨大な太陽が水平線へ沈んでいく。
+
+船も帆も波も、
+すべてが赤く輝いた。
+
+バルドが静かに言った。
+
+「こんな景色を見るためだけでも、
+海へ出る価値はあるな。」
+
+あなたは、
+これから待つ危険を一瞬忘れた。
+`,
+
+choices:[
+{
+text:"🌅 夕焼けを眺める",
+next:12
+}
+]
+},
+
+/* 12 */
+{
+title:"星の海",
+place:"外洋",
+bgm:"night",
+
+text:`
+夜。
+
+空には無数の星。
+
+波の音以外、
+ほとんど何も聞こえない。
+
+航海士リナが三つの星を指さす。
+
+「地図に書かれている三つの星と
+同じ並びかもしれない。」
+
+三つの星を結んだ先は、
+南東を指している。
+
+宝島の最初の手掛かりだった。
+`,
+
+choices:[
+{
+text:"⭐ 星の方向へ進路変更",
+next:13
+},
+{
+text:"🗺 地図と照合する",
+next:13
+}
+]
+},
+
+/* 13 */
+{
+title:"船員たちの夜",
+place:"外洋",
+day:3,
+bgm:"night",
+
+text:`
+夜更け。
+
+甲板で船員たちが輪になった。
+
+トムが故郷の話をする。
+
+バルドは若いころの失敗談を語る。
+
+船長ガルドは、
+昔仲間を嵐で失ったことを静かに話した。
+
+最後に船長は言う。
+
+「船は木と帆で動くんじゃない。」
+
+「仲間を信じる心で動くんだ。」
+
+あなたは、
+古い日記の言葉を思い出した。
+`,
+
+choices:[
+{
+text:"🤝 仲間を信じると約束する",
+next:14,
+hp:5
+}
+]
+},
+
+/* 14 */
+{
+title:"漂流する木箱",
+place:"外洋",
+bgm:"sea",
+
+text:`
+翌朝。
+
+海面に何かが浮いている。
+
+木箱だ。
+
+箱には古い王家の紋章が刻まれていた。
+
+ロープを使って引き上げる。
+
+鍵は壊れている。
+
+中には保存食と金貨、
+そして半分に破れた海図が入っていた。
+
+どうやら、
+以前この海域を通った船のものらしい。
+`,
+
+choices:[
+{
+text:"📦 箱を開けて回収する",
+next:15,
+food:15,
+gold:15
+},
+{
+text:"⚠️ 罠かもしれないので慎重に調べる",
+next:15,
+food:10,
+gold:10,
+hp:3
+}
+]
+},
+
+/* 15 */
+{
+title:"白い霧",
+place:"霧の海域",
+bgm:"night",
+
+text:`
+午後。
+
+突然、
+海を白い霧が包んだ。
+
+ほんの数分で、
+船首すら見えなくなる。
+
+風も止まった。
+
+波の音まで小さくなる。
+
+そのとき。
+
+霧の向こうから――
+
+ゴーン……。
+
+巨大な鐘のような音が聞こえた。
+
+しかし、この海に鐘を鳴らす島など、
+地図にはない。
+`,
+
+choices:[
+{
+text:"🔔 音の方向へ進む",
+next:16
+},
+{
+text:"🧭 霧が晴れるまで待つ",
+next:16,
+food:-4
+}
+]
+},
+
+/* 16 */
+{
+title:"幽霊船の影",
+place:"霧の海域",
+bgm:"night",
+
+text:`
+霧の中。
+
+巨大な船の影が現れた。
+
+帆は破れ、
+マストは折れている。
+
+誰も乗っていないように見える。
+
+船長ガルドが叫ぶ。
+
+「近づきすぎるな！」
+
+その瞬間、
+幽霊船らしき影は霧の中へ消えた。
+
+残ったのは一本の古い木札。
+
+そこには、
+
+「嵐の門を越えよ」
+
+と刻まれていた。
+`,
+
+choices:[
+{
+text:"🌫 木札を持って進む",
+next:17
+}
+]
+},
+
+/* 17 */
+{
+title:"黒い雲",
+place:"嵐の海域",
+day:4,
+bgm:"storm",
+
+text:`
+夕方。
+
+西の空が真っ黒になった。
+
+風が急激に強くなる。
+
+船長の顔色が変わった。
+
+「嵐だ！」
+
+船員が一斉に動く。
+
+帆を縮める。
+
+ロープを固定する。
+
+窓を閉じる。
+
+そして――
+
+巨大な雷鳴が海を揺らした。
+`,
+
+choices:[
+{
+text:"⛈ 嵐を突破する",
+next:18,
+hp:-5,
+sfx:"thunder"
+},
+{
+text:"⛵ 帆を下げて耐える",
+next:18,
+food:-5,
+sfx:"wind"
+}
+]
+},
+
+/* 18 */
+{
+title:"雷鳴",
+place:"嵐の海域",
+bgm:"storm",
+
+text:`
+ピシャァァン！
+
+船のすぐ近くへ雷が落ちた。
+
+夜の海が一瞬、
+昼のように明るくなる。
+
+波は船より高い。
+
+蒼海の星号が、
+山のような波を登る。
+
+そして次の瞬間――
+
+谷底へ落ちるように急降下した。
+
+船員たちが必死にロープへしがみつく。
+`,
+
+choices:[
+{
+text:"🪢 マストを守る",
+next:19,
+hp:-6,
+sfx:"bigwave"
+},
+{
+text:"🚢 船倉の荷物を固定する",
+next:19,
+food:-3
+}
+]
+},
+
+/* 19 */
+{
+title:"巨大な大波",
+place:"嵐の海域",
+bgm:"storm",
+
+text:`
+船長ガルドが叫ぶ。
+
+「右舷！巨大波！」
+
+暗闇の中から、
+壁のような波が迫る。
+
+あなたとバルドは舵を押さえた。
+
+リナが叫ぶ。
+
+「船首を波へ！」
+
+蒼海の星号は真正面から波へ突入。
+
+海水が甲板を飲み込んだ。
+`,
+
+choices:[
+{
+text:"🌊 全員で耐える！",
+next:20,
+hp:-7,
+sfx:"bigwave"
+}
+]
+},
+
+/* 20 */
+{
+title:"嵐の夜明け",
+place:"嵐の海域",
+day:5,
+bgm:"sea",
+
+text:`
+長い夜が明けた。
+
+雨が止む。
+
+雲の間から、
+一本の朝日が差し込んだ。
+
+蒼海の星号は傷だらけだったが、
+沈まなかった。
+
+船長ガルドが甲板を見渡す。
+
+「全員いるか！」
+
+一人ずつ返事をする。
+
+全員無事だ。
+
+歓声が上がった。
+`,
+
+choices:[
+{
+text:"🌅 航海を続ける",
+next:21,
+hp:8
+}
+]
+},
+
+/* 21 */
+{
+title:"黒い帆",
+place:"南海域",
+bgm:"pirate",
+
+text:`
+昼過ぎ。
+
+水平線に黒い帆が現れた。
+
+一隻。
+
+二隻。
+
+三隻。
+
+船長ガルドが望遠鏡を下ろす。
+
+「海賊だ。」
+
+中央の船には、
+赤い髑髏の旗。
+
+海賊船が急速に近づいてくる。
+
+大砲の砲口がこちらを向いた。
+`,
+
+choices:[
+{
+text:"🏴‍☠️ 戦う準備をする",
+next:22,
+sfx:"cannon"
+},
+{
+text:"💨 全速力で逃げる",
+next:23,
+food:-4
+}
+]
+},
+
+/* 22 */
+{
+title:"海賊との砲撃戦",
+place:"海賊海域",
+bgm:"pirate",
+
+text:`
+ドォォン！
+
+海賊船の大砲が火を噴いた。
+
+砲弾が海面を叩く。
+
+蒼海の星号も反撃。
+
+バルドが大砲へ火を入れる。
+
+轟音。
+
+煙。
+
+船長ガルドが叫ぶ。
+
+「奴らのマストを狙え！」
+
+あなたは照準を合わせた。
+`,
+
+choices:[
+{
+text:"💥 マストを狙う",
+next:24,
+gold:10,
+sfx:"cannon"
+},
+{
+text:"⚔️ 接近して戦う",
+next:24,
+hp:-8,
+gold:20,
+sfx:"sword"
+}
+]
+},
+
+/* 23 */
+{
+title:"全速航行",
+place:"海賊海域",
+bgm:"pirate",
+
+text:`
+「帆を全部開け！」
+
+追い風を受け、
+蒼海の星号が加速する。
+
+海賊船も追ってくる。
+
+砲弾が次々と海へ落ちる。
+
+だが古い船とは思えない速度で、
+少しずつ距離が開いていく。
+
+リナが叫んだ。
+
+「前方に島！」
+
+逃げ込めるかもしれない。
+`,
+
+choices:[
+{
+text:"🏝 島へ向かう",
+next:24,
+hp:-3
+}
+]
+},
+
+/* 24 */
+{
+title:"謎の無人島",
+place:"無人島",
+day:6,
+bgm:"island",
+
+text:`
+小さな湾へ船を入れる。
+
+背後の海賊船は、
+なぜか島へ近づこうとしない。
+
+海賊たちは急に進路を変え、
+遠ざかっていった。
+
+「この島を恐れている？」
+
+白い砂浜。
+
+巨大な木々。
+
+島の奥から、
+鳥とも獣とも違う声が聞こえる。
+
+船長は上陸を決めた。
+`,
+
+choices:[
+{
+text:"🏝 上陸する",
+next:25,
+sfx:"footsteps"
+}
+]
+},
+
+/* 25 */
+{
+title:"密林",
+place:"無人島ジャングル",
+bgm:"jungle",
+
+text:`
+森の中は蒸し暑かった。
+
+巨大な葉。
+
+色鮮やかな鳥。
+
+見たことのない花。
+
+足元には、
+古い石畳の一部が残っている。
+
+この島は本当の無人島ではない。
+
+かつて、
+誰かが暮らしていた。
+
+石畳はジャングルの奥へ続いていた。
+`,
+
+choices:[
+{
+text:"🌴 石畳を進む",
+next:26,
+sfx:"jungle"
+},
+{
+text:"🍎 食べ物を探す",
+next:26,
+food:15
+}
+]
+},
+
+/* 26 */
+{
+title:"石の守護者",
+place:"無人島遺跡",
+bgm:"island",
+
+text:`
+ジャングルの奥。
+
+巨大な石像が現れた。
+
+人間の顔と鳥の翼を持つ、
+不思議な守護者。
+
+石像の足元には三つの印。
+
+太陽。
+
+月。
+
+星。
+
+中央には文字が刻まれている。
+
+「夜を導くものを選べ。」
+
+リナが地図を見る。
+
+「答えは……。」
+`,
+
+choices:[
+{
+text:"☀️ 太陽",
+next:27,
+hp:-3
+},
+{
+text:"🌙 月",
+next:27
+},
+{
+text:"⭐ 星",
+next:28,
+gold:10
+}
+]
+},
+
+/* 27 */
+{
+title:"石像の試練",
+place:"無人島遺跡",
+bgm:"island",
+
+text:`
+石像の目が赤く光った。
+
+地面が震える。
+
+どうやら完全な正解ではなかったらしい。
+
+しかし壁の一部が開き、
+細い通路が現れた。
+
+奥から冷たい風が吹く。
+
+「まだ先へ進めそうだ。」
+
+あなたたちは慎重に通路へ入った。
+`,
+
+choices:[
+{
+text:"🕯 遺跡の中へ",
+next:28
+}
+]
+},
+
+/* 28 */
+{
+title:"星の祭壇",
+place:"古代遺跡",
+bgm:"island",
+
+text:`
+地下には円形の部屋があった。
+
+天井に小さな穴。
+
+そこから差し込んだ光が、
+床の星形の模様を照らしている。
+
+中央の祭壇には、
+青い水晶が置かれていた。
+
+その下には文字。
+
+「三つの星が重なるとき、
+黄金の島は東の海に現れる。」
+
+宝島の方向が分かった。
+`,
+
+choices:[
+{
+text:"💎 青い水晶を持っていく",
+next:29,
+gold:15
+},
+{
+text:"🙏 水晶は残し、文字だけ記録",
+next:29,
+hp:5
+}
+]
+},
+
+/* 29 */
+{
+title:"再出航",
+place:"無人島沖",
+day:7,
+bgm:"departure",
+
+text:`
+船へ戻った一行。
+
+海賊船の姿はもうない。
+
+船長ガルドが舵を取る。
+
+「東へ！」
+
+新たに得た海図と、
+三つの星の手掛かり。
+
+目指す場所は、
+もう遠くないはずだ。
+
+蒼海の星号は再び大海原へ出た。
+`,
+
+choices:[
+{
+text:"⛵ 宝島を目指す",
+next:30,
+food:-5
+}
+]
+},
+
+/* 30 */
+{
+title:"静かすぎる海",
+place:"東方海域",
+bgm:"sea",
+
+text:`
+翌日。
+
+不思議なほど海が静かになった。
+
+風がない。
+
+鳥もいない。
+
+魚すら見えない。
+
+突然――
+
+船の下を巨大な影が横切った。
+
+蒼海の星号よりもはるかに大きい。
+
+バルドが青ざめる。
+
+「今のは……何だ？」
+`,
+
+choices:[
+{
+text:"🔭 海を観察する",
+next:31
+},
+{
+text:"🚢 静かに進む",
+next:31
+}
+]
+},
+
+/* 31 */
+{
+title:"海の巨獣",
+place:"深海域",
+bgm:"storm",
+
+text:`
+海面が盛り上がった。
+
+ザァァァン！
+
+巨大な生物が姿を現す。
+
+クジラにも似ているが、
+背中には古い傷が何本もある。
+
+怪物は船へ近づき、
+巨大な目でこちらを見た。
+
+しかし攻撃してこない。
+
+その体には、
+古い銛が刺さっていた。
+`,
+
+choices:[
+{
+text:"🩹 銛を抜いて助ける",
+next:32,
+hp:-3
+},
+{
+text:"🚢 刺激せず離れる",
+next:32
+}
+]
+},
+
+/* 32 */
+{
+title:"海の守護者",
+place:"深海域",
+bgm:"sea",
+
+text:`
+巨大な生物は、
+しばらく船の横を泳いだ。
+
+やがて一声鳴くと、
+東へ向かって進み始める。
+
+まるで、
+
+「ついて来い」
+
+と言っているようだった。
+
+船長が笑った。
+
+「どうやら海の案内人を
+手に入れたらしい。」
+
+一行は巨獣の後を追った。
+`,
+
+choices:[
+{
+text:"🐋 海の守護者について行く",
+next:33
+}
+]
+},
+
+/* 33 */
+{
+title:"水平線の島影",
+place:"宝島近海",
+day:8,
+bgm:"treasure",
+
+text:`
+朝。
+
+リナがマストの上から叫んだ。
+
+「島！」
+
+全員が甲板へ飛び出す。
+
+水平線の向こう。
+
+雲の間から、
+巨大な島影が見えている。
+
+島の中央には鋭い山。
+
+その形は――
+
+宝の地図に描かれた島と同じだった。
+
+ついに見つけた。
+
+伝説の宝島だ。
+`,
+
+choices:[
+{
+text:"🏝 宝島へ！",
+next:34
+}
+]
+},
+
+/* 34 */
+{
+title:"黄金の浜",
+place:"宝島・海岸",
+bgm:"island",
+
+text:`
+蒼海の星号は、
+静かな入り江へ到着した。
+
+白い砂浜。
+
+透明な水。
+
+岸辺には、
+金色の小さな石が混じっている。
+
+だが人の姿はない。
+
+砂浜には、
+森へ向かう古い足跡のような模様。
+
+船長が言う。
+
+「ここからは歩きだ。」
+`,
+
+choices:[
+{
+text:"👣 足跡を追う",
+next:35,
+sfx:"footsteps"
+},
+{
+text:"🏖 海岸を調べる",
+next:35,
+gold:10
+}
+]
+},
+
+/* 35 */
+{
+title:"宝島のジャングル",
+place:"宝島・密林",
+bgm:"jungle",
+
+text:`
+ジャングルへ入る。
+
+無人島の森よりも、
+はるかに巨大な木々。
+
+太陽の光さえ、
+ほとんど地面へ届かない。
+
+遠くで奇妙な鳥が鳴く。
+
+トムが木の実を見つける。
+
+リナは苔に隠れた石碑を発見した。
+
+そこには一本の矢印。
+
+山の方向を指している。
+`,
+
+choices:[
+{
+text:"🗿 石碑に従う",
+next:36
+},
+{
+text:"🍎 木の実を集める",
+next:36,
+food:20
+}
+]
+},
+
+/* 36 */
+{
+title:"百年の石像",
+place:"宝島・古道",
+bgm:"jungle",
+
+text:`
+古道を進むと、
+巨大な石像が道を塞いでいた。
+
+右手には剣。
+
+左手には鍵。
+
+胸には三つの星。
+
+リナが言う。
+
+「無人島の遺跡と同じ文明だ。」
+
+石像の台座を押すと、
+低い音とともに動き始めた。
+
+その後ろに、
+下へ続く階段が現れた。
+`,
+
+choices:[
+{
+text:"⬇ 階段へ進む",
+next:37,
+sfx:"stone"
+},
+{
+text:"🔍 石像を調べる",
+next:37,
+gold:5
+}
+]
+},
+
+/* 37 */
+{
+title:"隠された谷",
+place:"宝島・秘密の谷",
+bgm:"jungle",
+
+text:`
+階段の先は、
+地下ではなかった。
+
+山に囲まれた秘密の谷。
+
+中央には滝。
+
+その奥に、
+黒い洞窟の入口がある。
+
+地図の赤い印は、
+まさにこの場所だった。
+
+船長が言う。
+
+「いよいよだな。」
+
+あなたは松明へ火をつけた。
+`,
+
+choices:[
+{
+text:"🔥 洞窟へ入る",
+next:38
+},
+{
+text:"🍖 先に休憩する",
+next:38,
+food:-5,
+hp:10
+}
+]
+},
+
+/* 38 */
+{
+title:"闇の洞窟",
+place:"宝島・洞窟",
+bgm:"cave",
+
+text:`
+洞窟の中は冷たい。
+
+水滴の音が響く。
+
+松明の炎が、
+濡れた岩を照らした。
+
+壁には古代文字。
+
+そして何百年も前の
+船乗りたちの名前。
+
+どうやら、
+ここまで来た冒険者は他にもいた。
+
+だが――
+
+宝を持って帰れた者はいない。
+`,
+
+choices:[
+{
+text:"🕯 奥へ進む",
+next:39,
+sfx:"cave"
+}
+]
+},
+
+/* 39 */
+{
+title:"コウモリの洞",
+place:"宝島・洞窟",
+bgm:"cave",
+
+text:`
+天井に無数の黒い影。
+
+その瞬間。
+
+バサバサバサッ！
+
+大量のコウモリが飛び立った。
+
+トムが叫んで頭を抱える。
+
+洞窟中に羽音が響く。
+
+その騒ぎで、
+壁の奥から風が吹いていることに気づいた。
+
+隠し通路がある。
+`,
+
+choices:[
+{
+text:"🦇 隠し通路を探す",
+next:40,
+sfx:"bat"
+}
+]
+},
+
+/* 40 */
+{
+title:"落とし穴",
+place:"宝島・地下迷宮",
+bgm:"cave",
+
+text:`
+細い道を進んでいた、そのとき。
+
+ガタン！
+
+床が崩れた。
+
+あなたの足元に
+巨大な穴が開く。
+
+間一髪でロープにつかまった。
+
+バルドがあなたを引き上げる。
+
+下を見ると、
+古い罠の仕掛けが見えた。
+
+宝を守る者が作ったものだ。
+`,
+
+choices:[
+{
+text:"🪢 ロープで慎重に渡る",
+next:41,
+hp:-3
+},
+{
+text:"🔍 別の道を探す",
+next:41
+}
+]
+},
+
+/* 41 */
+{
+title:"二つの道",
+place:"宝島・地下迷宮",
+bgm:"cave",
+
+text:`
+洞窟が二つに分かれた。
+
+右の道からは、
+風の音が聞こえる。
+
+左の道からは、
+水の流れる音。
+
+壁には古代文字。
+
+「力を求める者は右へ。」
+
+「知恵を求める者は左へ。」
+
+どちらを選ぶ？
+`,
+
+choices:[
+{
+text:"➡ 右の道へ",
+next:42,
+flag:"power"
+},
+{
+text:"⬅ 左の道へ",
+next:43,
+flag:"wisdom"
+}
+]
+},
+
+/* 42 */
+{
+title:"力の試練",
+place:"力の回廊",
+bgm:"cave",
+
+text:`
+右の道。
+
+巨大な石の円盤が
+通路を塞いでいる。
+
+船長とバルドが押す。
+
+びくともしない。
+
+あなたも加わる。
+
+「せーの！」
+
+三人で全力を込める。
+
+ゴゴゴゴ……。
+
+ついに円盤が動いた。
+
+その奥から金貨が見つかった。
+`,
+
+choices:[
+{
+text:"💪 奥へ進む",
+next:44,
+gold:20,
+hp:-5
+}
+]
+},
+
+/* 43 */
+{
+title:"知恵の試練",
+place:"知恵の回廊",
+bgm:"cave",
+
+text:`
+左の道。
+
+壁に三つの石板がある。
+
+太陽。
+月。
+星。
+
+その下には、
+
+「昼に消え、
+夜に現れ、
+旅人の道を教えるもの。」
+
+答えは明らかだった。
+
+星の石板を押す。
+
+カチリ。
+
+壁が静かに開いた。
+`,
+
+choices:[
+{
+text:"⭐ 星の石板を押す",
+next:44,
+gold:15
+}
+]
+},
+
+/* 44 */
+{
+title:"古代の大扉",
+place:"宝殿入口",
+bgm:"treasure",
+
+text:`
+二つの道は再び一つになった。
+
+その先に――
+
+高さ十メートルはある
+巨大な黄金の扉。
+
+中央には三つのくぼみ。
+
+太陽。
+
+月。
+
+星。
+
+リナが古い日記を読み返す。
+
+「三つの星が指す先……。」
+
+中央の星印だけが、
+微かに青く光っていた。
+`,
+
+choices:[
+{
+text:"⭐ 星の印を押す",
+next:45,
+sfx:"stone"
+},
+{
+text:"🗺 地図を扉へかざす",
+next:45,
+hp:3,
+sfx:"stone"
+}
+]
+},
+
+/* 45 */
+{
+title:"仲間の証",
+place:"宝殿入口",
+bgm:"treasure",
+
+text:`
+扉はまだ完全には開かない。
+
+文字が浮かび上がった。
+
+「一人で求めし者には開かぬ。」
+
+「共に歩みし者、
+手を重ねよ。」
+
+あなた。
+
+ガルド。
+
+リナ。
+
+バルド。
+
+トム。
+
+五人が扉へ手を置く。
+
+ゴゴゴゴゴ――。
+
+黄金の大扉が開き始めた。
+`,
+
+choices:[
+{
+text:"🤝 仲間と扉を開く",
+next:46,
+sfx:"stone"
+}
+]
+},
+
+/* 46 */
+{
+title:"秘密の宝殿",
+place:"黄金の宝殿",
+bgm:"treasure",
+
+text:`
+扉の向こう。
+
+暗闇の奥で、
+無数の光が輝いていた。
+
+松明を掲げる。
+
+全員が言葉を失う。
+
+黄金。
+
+宝石。
+
+銀の食器。
+
+古代の王冠。
+
+世界各地から集められたような
+膨大な宝物。
+
+そして部屋の中央には――
+
+巨大な宝箱が一つ。
+`,
+
+choices:[
+{
+text:"✨ 宝箱へ近づく",
+next:47
+}
+]
+},
+
+/* 47 */
+{
+title:"最後の宝箱",
+place:"黄金の宝殿",
+bgm:"treasure",
+
+text:`
+巨大な宝箱。
+
+金色の鎖。
+
+古代文字。
+
+船長ガルドが言う。
+
+「ここまで来た。」
+
+リナは慎重に箱を見る。
+
+「まだ罠があるかもしれない。」
+
+あなたの手は、
+宝箱の蓋へ届く距離にある。
+
+長い航海の目的が、
+目の前にあった。
+`,
+
+choices:[
+{
+text:"🧰 宝箱を開ける",
+next:48,
+sfx:"chest"
+},
+{
+text:"🔍 罠を調べてから開ける",
+next:48,
+hp:5,
+gold:10,
+sfx:"chest"
+}
+]
+},
+
+/* 48 */
+{
+title:"伝説の宝",
+place:"黄金の宝殿",
+bgm:"treasure",
+
+text:`
+カチリ。
+
+宝箱の鍵が外れた。
+
+ゆっくり蓋を開く。
+
+黄金の光が部屋いっぱいに広がる。
+
+金貨。
+
+巨大な宝石。
+
+古代王家の王冠。
+
+そして一冊の本。
+
+その表紙には、
+
+「海の王国 最後の記録」
+
+と書かれていた。
+
+あなたたちは、
+ついに伝説の宝を発見した。
+`,
+
+choices:[
+{
+text:"👑 宝を確かめる",
+next:49,
+gold:500,
+sfx:"coin"
+}
+]
+},
+
+/* 49 */
+{
+title:"宝島の真実",
+place:"黄金の宝殿",
+bgm:"treasure",
+
+text:`
+古代の本を開く。
+
+そこに書かれていた真実。
+
+この宝は、
+かつて海を支配した王国が
+未来の人々へ残したものだった。
+
+だが王は、
+黄金を宝とは呼んでいない。
+
+最後の文章。
+
+「黄金はいずれ失われる。」
+
+「旅を共にした仲間、
+困難を越えた勇気、
+互いを信じた記憶。」
+
+「それこそが、
+人が持ち帰ることのできる
+永遠の宝である。」
+
+全員が静かにその言葉を読んだ。
+`,
+
+choices:[
+{
+text:"🌅 故郷へ帰ろう",
+next:50
+}
+]
+},
+
+/* 50 */
+{
+title:"宝島を後に",
+place:"宝島・海岸",
+day:9,
+bgm:"ending",
+
+text:`
+宝を船へ運び終えるころ、
+空は夕焼けに染まっていた。
+
+あなたは宝島を振り返る。
+
+長い旅だった。
+
+嵐。
+
+海賊。
+
+無人島。
+
+古代遺跡。
+
+海の巨獣。
+
+そして宝島。
+
+船長ガルドが叫ぶ。
+
+「帆を上げろ！」
+
+蒼海の星号は、
+故郷へ向けて出航した。
+`,
+
+choices:[
+{
+text:"⛵ 帰還の航海へ",
+next:51
+}
+]
+},
+
+/* 51 */
+{
+title:"帰還の海",
+place:"帰還航路",
+day:12,
+bgm:"ending",
+
+text:`
+帰りの海は穏やかだった。
+
+星空の下。
+
+仲間たちは甲板へ集まった。
+
+トムが料理を作る。
+
+バルドが笑う。
+
+リナが星を見る。
+
+ガルドが舵を握る。
+
+あなたは、
+宝箱よりも大切なものを
+すでに手にしていることに気づいた。
+
+仲間との記憶だ。
+`,
+
+choices:[
+{
+text:"⭐ 故郷を目指す",
+next:52
+}
+]
+},
+
+/* 52 */
+{
+title:"懐かしい灯台",
+place:"故郷近海",
+day:15,
+bgm:"ending",
+
+text:`
+夜明け。
+
+水平線に一本の光。
+
+灯台だ。
+
+あなたはすぐに分かった。
+
+故郷の灯台。
+
+港町が見えてくる。
+
+鐘が鳴る。
+
+港の人々が、
+蒼海の星号に気づいた。
+
+岸壁へ人が集まり始める。
+`,
+
+choices:[
+{
+text:"🏠 港へ帰る",
+next:53
+}
+]
+},
+
+/* 53 */
+{
+title:"英雄たちの帰還",
+place:"故郷の港",
+bgm:"ending",
+
+text:`
+蒼海の星号が港へ入る。
+
+大歓声。
+
+「帰ってきたぞ！」
+
+「宝島へ行った船だ！」
+
+子供たちが走る。
+
+鐘が鳴る。
+
+旗が振られる。
+
+古道具屋の店主も、
+酒場の老人もそこにいた。
+
+老人が静かに笑った。
+
+「本当に帰ってきおったか。」
+
+船長ガルドがあなたを見る。
+
+「船長は俺だった。」
+
+「だがこの冒険を始めたのは、
+お前だ。」
+`,
+
+choices:[
+{
+text:"🎉 町へ上陸する",
+next:54,
+sfx:"fanfare"
+}
+]
+},
+
+/* 54 */
+{
+title:"本当の宝",
+place:"故郷の港",
+bgm:"ending",
+
+text:`
+宝箱が人々の前で開かれる。
+
+金貨と宝石が
+朝日に照らされて輝く。
+
+歓声が港を包んだ。
+
+しかし、
+あなたは仲間たちの顔を見る。
+
+長い航海の果てに、
+あなたは伝説の宝を手に入れた。
+
+しかし、本当の宝は、
+仲間たちと乗り越えた
+冒険そのものだった。
+`,
+
+choices:[
+{
+text:"✨ エンディングへ",
+next:55
+}
+]
+},
+
+/* 55 */
+{
+title:"THE END",
+place:"故郷",
+bgm:"ending",
+
+text:`
+長い航海は終わった。
+
+だが――
+
+世界には、
+まだ誰も見たことのない島がある。
+
+まだ誰も開いたことのない宝箱がある。
+
+そして、
+まだ語られていない物語がある。
+
+いつの日か。
+
+あなたが再び海を見つめたとき。
+
+新しい冒険は、
+そこから始まる。
+
+THE END
+`,
+
+ending:true,
+
+choices:[]
+}
+
+];
+
+/* =====================================================
+   初期化
+===================================================== */
+
+const bgmEl = document.getElementById("bgm");
+const sfxEl = document.getElementById("sfx");
+
+const volumeSlider = document.getElementById("volume");
+
+volumeSlider.addEventListener("input",()=>{
+
+    bgmEl.volume = Number(volumeSlider.value);
+
+    sfxEl.volume = Math.min(
+        1,
+        Number(volumeSlider.value) + .15
+    );
+
+});
+
+/* =====================================================
+   新しいゲーム
+===================================================== */
+
+function newGame(){
+
+    state = {
+
+        scene:0,
+
+        hp:100,
+
+        food:100,
+
+        gold:20,
+
+        place:"港町",
+
+        day:0,
+
+        bgmOn:true,
+
+        sfxOn:true,
+
+        narrationOn:true,
+
+        flags:{}
+
+    };
+
+    document.getElementById("startScreen").style.display="none";
+
+    showScene(0);
+
+}
+
+/* =====================================================
+   続きから
+===================================================== */
+
+function continueGame(){
+
+    const data = localStorage.getItem(SAVE_KEY);
+
+    if(!data){
+
+        alert("まだセーブデータがありません。");
+
+        return;
+
+    }
+
+    try{
+
+        const loaded = JSON.parse(data);
+
+        state = Object.assign(state,loaded);
+
+        document.getElementById("startScreen").style.display="none";
+
+        showScene(state.scene,false);
+
+    }catch(e){
+
+        alert("セーブデータを読み込めませんでした。");
+
+    }
+
+}
+
+/* =====================================================
+   場面表示
+===================================================== */
+
+function showScene(index,autoSave=true){
+
+    if(index < 0) index = 0;
+
+    if(index >= scenes.length){
+        index = scenes.length - 1;
+    }
+
+    state.scene = index;
+
+    const scene = scenes[index];
+
+    if(scene.place){
+        state.place = scene.place;
+    }
+
+    if(typeof scene.day === "number"){
+        state.day = Math.max(
+            state.day,
+            scene.day
+        );
+    }
+
+    state.hp = Math.max(1,Math.min(100,state.hp));
+
+    state.food = Math.max(0,Math.min(150,state.food));
+
+    updateStatus();
+
+    const card =
+        document.getElementById("storyCard");
+
+    card.classList.remove("fadeIn");
+
+    void card.offsetWidth;
+
+    card.classList.add("fadeIn");
+
+    document.getElementById("sceneNo").textContent =
+        "SCENE " +
+        String(index + 1).padStart(2,"0");
+
+    document.getElementById("sceneTitle").textContent =
+        scene.title;
+
+    document.getElementById("storyText").textContent =
+        scene.text.trim();
+
+    renderChoices(scene);
+
+    setBGM(scene.bgm);
+
+    applyAtmosphere(scene);
+
+    if(
+        index === 9 ||
+        index === 11
+    ){
+        flyBird();
+    }
+
+    if(
+        index === 17 ||
+        index === 18 ||
+        index === 19
+    ){
+        lightning();
+    }
+
+    if(
+        index === 48 ||
+        index === 54
+    ){
+        treasureEffect();
+    }
+
+    if(scene.ending){
+
+        document.getElementById("storyText").innerHTML =
+            `
+            <div style="white-space:pre-line">
+            ${escapeHTML(scene.text.trim())}
+            </div>
+
+            <div class="theEnd">
+                THE END
+            </div>
+            `;
+
+        const btn =
+            document.createElement("button");
+
+        btn.className="choice";
+
+        btn.textContent="🌊 もう一度冒険する";
+
+        btn.onclick=restartGame;
+
+        document.getElementById("choices").appendChild(btn);
+
+        treasureRain();
+
+        playSFX("fanfare");
+
+    }
+
+    if(state.narrationOn){
+
+        setTimeout(
+            ()=>speakScene(scene),
+            450
+        );
+
+    }
+
+    if(autoSave){
+
+        saveGame(true);
+
+    }
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+
+}
+
+/* =====================================================
+   選択肢
+===================================================== */
+
+function renderChoices(scene){
+
+    const area =
+        document.getElementById("choices");
+
+    area.innerHTML="";
+
+    scene.choices.forEach(choice=>{
+
+        const btn =
+            document.createElement("button");
+
+        btn.className="choice";
+
+        btn.textContent=choice.text;
+
+        btn.onclick=()=>choose(choice);
+
+        area.appendChild(btn);
+
+    });
+
+}
+
+/* =====================================================
+   選択処理
+===================================================== */
+
+function choose(choice){
+
+    if(choice.hp){
+
+        state.hp += choice.hp;
+
+    }
+
+    if(choice.food){
+
+        state.food += choice.food;
+
+    }
+
+    if(choice.gold){
+
+        state.gold += choice.gold;
+
+    }
+
+    if(choice.day){
+
+        state.day += choice.day;
+
+    }
+
+    if(choice.flag){
+
+        state.flags[choice.flag]=true;
+
+    }
+
+    if(choice.sfx){
+
+        playSFX(choice.sfx);
+
+    }
+
+    state.hp =
+        Math.max(1,Math.min(100,state.hp));
+
+    state.food =
+        Math.max(0,Math.min(150,state.food));
+
+    state.gold =
+        Math.max(0,state.gold);
+
+    showScene(choice.next);
+
+}
+
+/* =====================================================
+   ステータス
+===================================================== */
+
+function updateStatus(){
+
+    document.getElementById("hp").textContent =
+        state.hp;
+
+    document.getElementById("food").textContent =
+        state.food;
+
+    document.getElementById("gold").textContent =
+        state.gold;
+
+    document.getElementById("place").textContent =
+        state.place;
+
+    document.getElementById("day").textContent =
+        state.day + "日";
+
+}
+
+/* =====================================================
+   セーブ
+===================================================== */
+
+function saveGame(silent=false){
+
+    localStorage.setItem(
+        SAVE_KEY,
+        JSON.stringify(state)
+    );
+
+    if(!silent){
+
+        alert("冒険の記録をセーブしました。");
+
+    }
+
+}
+
+/* =====================================================
+   セーブ削除
+===================================================== */
+
+function deleteSave(){
+
+    const yes =
+        confirm(
+            "セーブデータを削除しますか？"
+        );
+
+    if(!yes) return;
+
+    localStorage.removeItem(SAVE_KEY);
+
+    alert(
+        "セーブデータを削除しました。"
+    );
+
+}
+
+/* =====================================================
+   最初から
+===================================================== */
+
+function restartGame(){
+
+    stopNarration();
+
+    currentBGM="";
+
+    bgmEl.pause();
+
+    localStorage.removeItem(SAVE_KEY);
+
+    document.getElementById(
+        "treasureOverlay"
+    ).style.display="none";
+
+    document.getElementById(
+        "startScreen"
+    ).style.display="flex";
+
+}
+
+/* =====================================================
+   BGM
+===================================================== */
+
+function setBGM(name){
+
+    if(!name){
+        return;
+    }
+
+    if(currentBGM === name){
+        return;
+    }
+
+    currentBGM = name;
+
+    bgmEl.pause();
+
+    bgmEl.src =
+        bgmFiles[name] || "";
+
+    bgmEl.volume =
+        Number(volumeSlider.value);
+
+    if(!state.bgmOn){
+        return;
+    }
+
+    if(!bgmEl.src){
+        return;
+    }
+
+    bgmEl.play().catch(()=>{
+
+        /*
+        ブラウザの自動再生制限や、
+        音源ファイル未設置でも
+        ゲームを止めない。
+        */
+
+    });
+
+}
+
+/* =====================================================
+   BGM ON/OFF
+===================================================== */
+
+function toggleBGM(){
+
+    state.bgmOn = !state.bgmOn;
+
+    if(state.bgmOn){
+
+        if(currentBGM){
+
+            bgmEl.src =
+                bgmFiles[currentBGM];
+
+            bgmEl.volume =
+                Number(volumeSlider.value);
+
+            bgmEl.play().catch(()=>{});
+
+        }
+
+        alert("BGMをONにしました。");
+
+    }else{
+
+        bgmEl.pause();
+
+        alert("BGMをOFFにしました。");
+
+    }
+
+}
+
+/* =====================================================
+   効果音
+===================================================== */
+
+function playSFX(name){
+
+    if(!state.sfxOn){
+        return;
+    }
+
+    const file =
+        sfxFiles[name];
+
+    if(!file){
+        return;
+    }
+
+    try{
+
+        sfxEl.pause();
+
+        sfxEl.currentTime=0;
+
+        sfxEl.src=file;
+
+        sfxEl.volume =
+            Math.min(
+                1,
+                Number(volumeSlider.value)+.15
+            );
+
+        sfxEl.play().catch(()=>{});
+
+    }catch(e){}
+
+}
+
+function toggleSFX(){
+
+    state.sfxOn =
+        !state.sfxOn;
+
+    sfxEl.pause();
+
+    alert(
+        state.sfxOn
+        ? "効果音をONにしました。"
+        : "効果音をOFFにしました。"
+    );
+
+}
+
+/* =====================================================
+   音声読み上げ
+===================================================== */
+
+function toggleNarration(){
+
+    state.narrationOn =
+        !state.narrationOn;
+
+    if(!state.narrationOn){
+
+        stopNarration();
+
+    }else{
+
+        const scene =
+            scenes[state.scene];
+
+        if(scene){
+            speakScene(scene);
+        }
+
+    }
+
+    alert(
+        state.narrationOn
+        ? "ナレーションをONにしました。"
+        : "ナレーションをOFFにしました。"
+    );
+
+}
+
+/* =====================================================
+   ナレーション
+===================================================== */
+
+function speakScene(scene){
+
+    if(!state.narrationOn){
+        return;
+    }
+
+    if(
+        !("speechSynthesis" in window)
+    ){
+        return;
+    }
+
+    window.speechSynthesis.cancel();
+
+    const text =
+        scene.title + "。" +
+        scene.text.replace(/\n/g," ");
+
+    const utter =
+        new SpeechSynthesisUtterance(text);
+
+    utter.lang="ja-JP";
+
+    utter.rate =
+        Number(
+            document.getElementById(
+                "speechRate"
+            ).value
+        );
+
+    utter.pitch=1;
+
+    utter.volume=.95;
+
+    const voices =
+        window.speechSynthesis.getVoices();
+
+    const japanese =
+        voices.find(v=>
+            v.lang &&
+            v.lang.toLowerCase().startsWith("ja")
+        );
+
+    if(japanese){
+
+        utter.voice=japanese;
+
+    }
+
+    window.speechSynthesis.speak(utter);
+
+}
+
+/* =====================================================
+   読み上げ停止
+===================================================== */
+
+function stopNarration(){
+
+    if(
+        "speechSynthesis" in window
+    ){
+
+        window.speechSynthesis.cancel();
+
+    }
+
+}
+
+/* =====================================================
+   雰囲気
+===================================================== */
+
+function applyAtmosphere(scene){
+
+    const world =
+        document.getElementById("world");
+
+    const title =
+        scene.title;
+
+    if(
+        title.includes("夜") ||
+        title.includes("星") ||
+        title.includes("霧")
+    ){
+
+        world.style.background =
+        `
+        radial-gradient(
+            circle at 60% 13%,
+            rgba(81,102,170,.32),
+            transparent 30%
+        ),
+        linear-gradient(
+            #010513,
+            #06162e 55%,
+            #052c48
+        )
+        `;
+
+    }
+
+    else if(
+        title.includes("嵐") ||
+        title.includes("雷") ||
+        title.includes("大波")
+    ){
+
+        world.style.background =
+        `
+        linear-gradient(
+            #050811,
+            #172437 50%,
+            #05263b
+        )
+        `;
+
+    }
+
+    else if(
+        title.includes("洞") ||
+        title.includes("回廊") ||
+        title.includes("宝殿")
+    ){
+
+        world.style.background =
+        `
+        radial-gradient(
+            circle at 50% 20%,
+            #2a2416,
+            #05070b 60%,
+            #010204
+        )
+        `;
+
+    }
+
+    else if(
+        title.includes("宝") ||
+        title.includes("黄金")
+    ){
+
+        world.style.background =
+        `
+        radial-gradient(
+            circle at 50% 20%,
+            rgba(190,136,22,.35),
+            transparent 36%
+        ),
+        linear-gradient(
+            #071124,
+            #082f49,
+            #073751
+        )
+        `;
+
+    }
+
+    else{
+
+        world.style.background =
+        `
+        radial-gradient(
+            circle at 50% 10%,
+            rgba(30,103,180,.35),
+            transparent 38%
+        ),
+        linear-gradient(
+            #021128 0%,
+            #062a50 55%,
+            #073c60 100%
+        )
+        `;
+
+    }
+
+}
+
+/* =====================================================
+   カモメ
+===================================================== */
+
+function flyBird(){
+
+    const bird =
+        document.getElementById("bird");
+
+    bird.classList.remove("flyBird");
+
+    void bird.offsetWidth;
+
+    bird.classList.add("flyBird");
+
+    playSFX("seagull");
+
+}
+
+/* =====================================================
+   雷
+===================================================== */
+
+function lightning(){
+
+    const el =
+        document.getElementById("lightning");
+
+    el.classList.remove("flash");
+
+    void el.offsetWidth;
+
+    el.classList.add("flash");
+
+    playSFX("thunder");
+
+}
+
+/* =====================================================
+   宝箱演出
+===================================================== */
+
+function treasureEffect(){
+
+    const el =
+        document.getElementById(
+            "treasureOverlay"
+        );
+
+    el.style.display="flex";
+
+    treasureRain();
+
+    setTimeout(()=>{
+
+        el.style.display="none";
+
+    },2500);
+
+}
+
+/* =====================================================
+   金貨
+===================================================== */
+
+function treasureRain(){
+
+    const icons =
+        ["🪙","💎","✨","👑"];
+
+    for(
+        let i=0;
+        i<30;
+        i++
+    ){
+
+        const coin =
+            document.createElement("div");
+
+        coin.className=
+            "goldParticle";
+
+        coin.textContent =
+            icons[
+                Math.floor(
+                    Math.random()*icons.length
+                )
+            ];
+
+        coin.style.left =
+            Math.random()*100 + "vw";
+
+        coin.style.animationDelay =
+            Math.random()*2 + "s";
+
+        coin.style.animationDuration =
+            (3 + Math.random()*3) + "s";
+
+        document.body.appendChild(coin);
+
+        setTimeout(()=>{
+
+            coin.remove();
+
+        },7000);
+
+    }
+
+}
+
+/* =====================================================
+   HTML安全化
+===================================================== */
+
+function escapeHTML(str){
+
+    return str
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+
+}
+
+/* =====================================================
+   音声一覧取得
+===================================================== */
+
+if(
+    "speechSynthesis" in window
+){
+
+    window.speechSynthesis.getVoices();
+
+    window.speechSynthesis.onvoiceschanged =
+        ()=>window.speechSynthesis.getVoices();
+
+}
+
+/* =====================================================
+   ページ離脱時に声停止
+===================================================== */
+
+window.addEventListener(
+    "beforeunload",
+    stopNarration
+);
+
+/* =====================================================
+   最初の状態
+===================================================== */
+
+bgmEl.volume=.45;
+sfxEl.volume=.6;
+
+updateStatus();
+
+</script>
+
+</body>
+</html>
